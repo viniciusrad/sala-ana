@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
@@ -45,6 +45,17 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Verificar se já está autenticado
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        router.push('/')
+      }
+    }
+    checkSession()
+  }, [router])
+
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTab(newValue)
     setError(null)
@@ -58,20 +69,56 @@ export default function AuthPage() {
     setLoading(true)
     setError(null)
 
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       })
 
-      if (signInError) throw signInError
+      if (signInError) {
+        switch (signInError.message) {
+          case 'Invalid login credentials':
+            throw new Error('Email ou senha incorretos')
+          case 'Email not confirmed':
+            throw new Error('Por favor, confirme seu email antes de fazer login')
+          default:
+            throw signInError
+        }
+      }
 
-      router.push('/')
+      if (data?.user) {
+        // Criar ou atualizar o perfil do usuário se ainda não existir
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'id'
+          })
+
+        if (profileError) {
+          console.error('Erro ao criar/atualizar perfil:', profileError)
+        }
+
+        // Redirecionar para a página inicial usando o router
+        router.push('/')
+      } else {
+        throw new Error('Erro ao estabelecer sessão')
+      }
     } catch (err) {
+      console.error('Erro no login:', err)
       if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError('Erro ao fazer login')
+        setError('Erro ao fazer login. Tente novamente.')
       }
     } finally {
       setLoading(false)
@@ -93,6 +140,9 @@ export default function AuthPage() {
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
 
       if (signUpError) throw signUpError
