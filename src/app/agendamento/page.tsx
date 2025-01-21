@@ -83,7 +83,7 @@ export default function AgendamentoReforco() {
         Agendamento de Reforço Educacional
       </Typography>
 
-      <Box mb={4}>
+      {/* <Box mb={4}>
         <FormControl fullWidth>
           <TextField
             label="Máximo de alunos por horário"
@@ -93,14 +93,14 @@ export default function AgendamentoReforco() {
             variant="outlined"
           />
         </FormControl>
-      </Box>
+      </Box> */}
 
       <Box mb={4}>
         <Typography variant="h5" gutterBottom>
-          Novo Agendamento
+          Agendamento Semanal
         </Typography>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          {/* <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               label="Nome do Aluno"
@@ -108,7 +108,7 @@ export default function AgendamentoReforco() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNovoAluno(e.target.value)}
               variant="outlined"
             />
-          </Grid>
+          </Grid> */}
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle1" gutterBottom>
               Dias da Semana (selecione até 3)
@@ -157,6 +157,9 @@ export default function AgendamentoReforco() {
 
         <Button variant="contained" onClick={adicionarAgendamento} sx={{ mt: 4 }}>
           Agendar
+        </Button>
+        <Button variant="contained" onClick={adicionarAgendamento} sx={{ mt: 4, marginLeft: "1rem" }}>
+          Reservar Horários
         </Button>
       </Box>
 
