@@ -169,11 +169,23 @@ export default function AgendamentoReforco() {
     if (!usuario?.id) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('horarios')
-        .select('*')
-        .eq('id_aluno', usuario.id)
+        .select(`
+          *,
+          profiles:id_aluno (
+            nome_completo,
+            email
+          )
+        `)
         .eq('ativo', true);
+
+      // Se não for admin, filtra apenas os agendamentos do usuário
+      if (usuario.tipo_usuario !== 'admin') {
+        query = query.eq('id_aluno', usuario.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Erro ao carregar agendamentos:', error);
@@ -181,25 +193,59 @@ export default function AgendamentoReforco() {
       }
 
       if (data) {
-        // Agrupa os horários por dia da semana
-        const agendamentosAgrupados = data.reduce((acc: { [key: string]: string[] }, item) => {
-          if (!acc[item.dia_semana]) {
-            acc[item.dia_semana] = [];
+        // Agrupa os horários por aluno e dia da semana
+        const agendamentosAgrupados = data.reduce((acc: Agendamento[], item) => {
+          const alunoEmail = item.profiles?.email || '';
+          const alunoNome = item.profiles?.nome_completo || alunoEmail;
+          
+          const alunoExistente = acc.find(a => a.aluno === alunoNome);
+          
+          if (alunoExistente) {
+            if (!alunoExistente.horarios[item.dia_semana]) {
+              alunoExistente.horarios[item.dia_semana] = [];
+            }
+            if (!alunoExistente.horarios[item.dia_semana].includes(item.horario)) {
+              alunoExistente.horarios[item.dia_semana].push(item.horario);
+            }
+          } else {
+            acc.push({
+              aluno: alunoNome,
+              horarios: {
+                [item.dia_semana]: [item.horario]
+              }
+            });
           }
-          acc[item.dia_semana].push(item.horario);
+          
           return acc;
-        }, {});
+        }, []);
 
-        setAgendamentos([
-          {
-            aluno: usuario.nome_completo || usuario.email || '',
-            horarios: agendamentosAgrupados,
-          },
-        ]);
+        console.log('Agendamentos agrupados:', agendamentosAgrupados);
+        setAgendamentos(agendamentosAgrupados);
       }
     } catch (err) {
       console.error('Erro ao carregar agendamentos:', err);
     }
+  };
+
+  // Função para calcular total de alunos por horário
+  const calcularTotalAlunosPorHorario = (dia: string, horario: string) => {
+    let total = 0;
+    
+    agendamentos.forEach(agendamento => {
+      // Verifica se existem horários para o dia específico
+      const horariosNoDia = agendamento.horarios[dia];
+      
+      // Se houver horários no dia, verifica se o horário específico está incluído
+      if (Array.isArray(horariosNoDia)) {
+        // Compara apenas as horas e minutos, ignorando os segundos
+        const horarioExiste = horariosNoDia.some(h => h.startsWith(horario));
+        if (horarioExiste) {
+          total += 1;
+        }
+      }
+    });
+
+    return total;
   };
 
   // Carrega os agendamentos quando o usuário é carregado
@@ -208,6 +254,11 @@ export default function AgendamentoReforco() {
       carregarAgendamentos();
     }
   }, [usuario?.id]);
+
+  // Efeito para debug dos agendamentos
+  useEffect(() => {
+    console.log('Agendamentos atualizados:', agendamentos);
+  }, [agendamentos]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -227,7 +278,7 @@ export default function AgendamentoReforco() {
               Máximo de alunos por horário: {maxAlunos}
             </FormHelperText>
             <FormHelperText>
-              Usuário:{" "}
+              {usuario?.tipo_usuario === 'admin' ? 'Administrador' : 'Aluno'}:{" "}
               {usuario?.nome_completo || usuario?.email || "Carregando..."}
             </FormHelperText>
           </Box>
@@ -236,7 +287,7 @@ export default function AgendamentoReforco() {
 
       <Box mb={4}>
         <Typography variant="h5" gutterBottom>
-          Agendamento Semanal
+          {usuario?.tipo_usuario === 'admin' ? 'Gerenciar Agendamentos' : 'Agendamento Semanal'}
         </Typography>
         <Grid container spacing={4}>
           {/* <Grid item xs={12} md={6}>
@@ -341,8 +392,52 @@ export default function AgendamentoReforco() {
       )}
 
       <Box mt={8}>
+        {/* Resumo de alunos por horário */}
+        <Paper sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Total de Alunos por Horário
+          </Typography>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Dia</TableCell>
+                  {horariosDisponiveis.map((horario) => (
+                    <TableCell key={horario} align="center">{horario}</TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {diasSemana.map((dia) => (
+                  <TableRow key={dia}>
+                    <TableCell>{dia}</TableCell>
+                    {horariosDisponiveis.map((horario) => {
+                      console.log(dia, horario)
+                      const total = calcularTotalAlunosPorHorario(dia, horario);
+                      const lotado = total >= maxAlunos;
+                      return (
+                        <TableCell 
+                          key={`${dia}-${horario}`} 
+                          align="center"
+                          sx={{
+                            bgcolor: lotado ? 'error.main' : total > 0 ? 'success.light' : 'inherit',
+                            color: lotado ? 'white' : 'inherit',
+                            fontWeight: total > 0 ? 'bold' : 'normal'
+                          }}
+                        >
+                          {total}/{maxAlunos}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+
         <Typography variant="h5" gutterBottom>
-          Meus Agendamentos
+          {usuario?.tipo_usuario === 'admin' ? 'Todos os Agendamentos' : 'Meus Agendamentos'}
         </Typography>
         <Grid container spacing={4}>
           {agendamentos.map((agendamento, index) => (
