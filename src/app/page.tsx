@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
@@ -13,11 +13,6 @@ import {
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person } from '@mui/icons-material'
 
-interface UserProfile {
-  nome_completo?: string
-  tipo_usuario?: 'aluno' | 'professor' | 'admin'
-  email?: string
-}
 
 export default function HomePage() {
   const router = useRouter()
