@@ -57,16 +57,16 @@ export default function HomePage() {
         }
 
         // Buscar perfil do usuário
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('nome_completo, tipo_usuario, email')
-          .eq('id', session.user.id)
-          .single()
+        // const { data: profileData, error: profileError } = await supabase
+        //   .from('profiles')
+        //   .select('nome_completo, tipo_usuario, email')
+        //   .eq('id', session.user.id)
+        //   .single()
 
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Erro ao carregar perfil:', profileError)
-          return
-        }
+        // if (profileError && profileError.code !== 'PGRST116') {
+        //   console.error('Erro ao carregar perfil:', profileError)
+        //   return
+        // }
 
         // setProfile(profileData || { email: session.user.email })
       } catch (err) {
