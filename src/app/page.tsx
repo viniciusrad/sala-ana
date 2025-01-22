@@ -24,14 +24,32 @@ interface UserProfile {
 
 export default function HomePage() {
   const router = useRouter()
+
+  // Verificar se existe sessão
+  useEffect(() => {
+    const verificarSessao = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session?.user) {
+        router.push('/login')
+      }
+    }
+
+    verificarSessao()
+  }, [])
+
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession()
+
         if (sessionError) {
           console.error('Erro ao verificar sessão:', sessionError)
           return
@@ -76,10 +94,14 @@ export default function HomePage() {
 
   const getTipoUsuarioLabel = (tipo?: string) => {
     switch (tipo) {
-      case 'aluno': return 'Aluno'
-      case 'professor': return 'Professor'
-      case 'admin': return 'Administrador'
-      default: return 'Usuário'
+      case 'aluno':
+        return 'Aluno'
+      case 'professor':
+        return 'Professor'
+      case 'admin':
+        return 'Administrador'
+      default:
+        return 'Usuário'
     }
   }
 
@@ -88,27 +110,33 @@ export default function HomePage() {
       title: 'Agendamentos',
       description: 'Gerencie seus horários de reforço',
       icon: <CalendarMonth sx={{ fontSize: 40 }} />,
-      path: '/agendamento'
+      path: '/agendamento',
     },
     {
       title: 'Horários',
       description: 'Visualize a grade de horários',
       icon: <Schedule sx={{ fontSize: 40 }} />,
-      path: '/horarios'
+      path: '/horarios',
     },
     {
       title: 'Perfil',
       description: 'Gerencie suas informações',
       icon: <Person sx={{ fontSize: 40 }} />,
-      path: '/perfil'
-    }
+      path: '/perfil',
+    },
   ]
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth='lg'>
       <Box sx={{ mt: 4, mb: 8 }}>
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>
                 <Person sx={{ fontSize: 32 }} />
@@ -121,31 +149,31 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
+                    <Typography variant='h5' gutterBottom sx={{ mb: 0 }}>
                       {profile?.nome_completo || 'Bem-vindo'}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" color="text.secondary">
+                      <Typography variant='body1' color='text.secondary'>
                         {profile?.email}
                       </Typography>
                       <Chip
                         label={getTipoUsuarioLabel(profile?.tipo_usuario)}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
+                        size='small'
+                        color='primary'
+                        variant='outlined'
                       />
                     </Box>
                   </>
                 )}
               </Box>
             </Box>
-            <Button variant="outlined" onClick={handleLogout}>
+            <Button variant='outlined' onClick={handleLogout}>
               Sair
             </Button>
           </Box>
         </Paper>
 
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+        <Typography variant='h4' component='h1' gutterBottom sx={{ mb: 4 }}>
           Sistema de Reforço Escolar
         </Typography>
 
@@ -170,10 +198,14 @@ export default function HomePage() {
                 onClick={() => router.push(item.path)}
               >
                 {item.icon}
-                <Typography variant="h6" component="h2" sx={{ mt: 2 }}>
+                <Typography variant='h6' component='h2' sx={{ mt: 2 }}>
                   {item.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ mt: 1 }}
+                >
                   {item.description}
                 </Typography>
               </Paper>
