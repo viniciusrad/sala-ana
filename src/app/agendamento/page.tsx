@@ -219,7 +219,6 @@ export default function AgendamentoReforco() {
           return acc;
         }, []);
 
-        console.log('Agendamentos agrupados:', agendamentosAgrupados);
         setAgendamentos(agendamentosAgrupados);
       }
     } catch (err) {
@@ -257,7 +256,6 @@ export default function AgendamentoReforco() {
 
   // Efeito para debug dos agendamentos
   useEffect(() => {
-    console.log('Agendamentos atualizados:', agendamentos);
   }, [agendamentos]);
 
   return (
@@ -412,7 +410,6 @@ export default function AgendamentoReforco() {
                   <TableRow key={dia}>
                     <TableCell>{dia}</TableCell>
                     {horariosDisponiveis.map((horario) => {
-                      console.log(dia, horario)
                       const total = calcularTotalAlunosPorHorario(dia, horario);
                       const lotado = total >= maxAlunos;
                       return (
