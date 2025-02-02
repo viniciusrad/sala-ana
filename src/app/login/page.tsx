@@ -76,49 +76,57 @@ export default function AuthPage() {
     }
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      // Primeiro, tenta fazer o login
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
       })
 
+      console.log('Login response:', { authData, error: signInError })
+
       if (signInError) {
-        switch (signInError.message) {
-          case 'Invalid login credentials':
-            throw new Error('Email ou senha incorretos')
-          case 'Email not confirmed':
-            throw new Error('Por favor, confirme seu email antes de fazer login')
-          default:
-            throw signInError
-        }
+        throw signInError
       }
 
-      if (data?.user) {
-        // Criar ou atualizar o perfil do usuário se ainda não existir
+      if (authData?.user) {
+        // Verifica se a sessão foi estabelecida
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        console.log('Sessão após login:', sessionData)
+
+        if (sessionError) {
+          throw sessionError
+        }
+
+        // Atualiza o perfil
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert({
-            id: data.user.id,
-            email: data.user.email,
+            id: authData.user.id,
+            email: authData.user.email,
             updated_at: new Date().toISOString(),
           }, {
             onConflict: 'id'
           })
 
         if (profileError) {
-          console.error('Erro ao criar/atualizar perfil:', profileError)
+          console.error('Erro ao atualizar perfil:', profileError)
         }
 
-        // Redirecionar para a página inicial usando o router
+        // Força uma atualização do estado da sessão
+        await supabase.auth.refreshSession()
+
+        // Log dos cookies disponíveis
+        console.log('Cookies após login:', document.cookie)
+
+        // Redireciona para a página inicial
         router.push('/')
-      } else {
-        throw new Error('Erro ao estabelecer sessão')
       }
-    } catch (err) {
-      console.error('Erro no login:', err)
-      if (err instanceof Error) {
-        setError(err.message)
+    } catch (error) {
+      console.error('Erro completo:', error)
+      if (error instanceof Error) {
+        setError(error.message)
       } else {
-        setError('Erro ao fazer login. Tente novamente.')
+        setError('Erro ao fazer login')
       }
     } finally {
       setLoading(false)
