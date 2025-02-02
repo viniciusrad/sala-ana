@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverActions: true,
+    serverActions: {
+      enabled: true
+    }
   },
   // Adicione isso se estiver tendo problemas com CORS
   async headers() {

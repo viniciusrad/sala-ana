@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
@@ -9,13 +9,13 @@ import {
   Typography,
   Grid,
   Paper,
-
+  Button,
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person } from '@mui/icons-material'
 
-
 export default function HomePage() {
   const router = useRouter()
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Verificar se existe sessão
   useEffect(() => {
@@ -31,71 +31,22 @@ export default function HomePage() {
     verificarSessao()
   }, [])
 
-  // const [profile, setProfile] = useState<UserProfile | null>(null)
-  // const [loading, setLoading] = useState(true)
-
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession()
+    const verificarAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('tipo_usuario')
+          .eq('id', session.user.id)
+          .single()
 
-        if (sessionError) {
-          console.error('Erro ao verificar sessão:', sessionError)
-          return
-        }
-
-        if (!session?.user) {
-          return
-        }
-
-        // Buscar perfil do usuário
-        // const { data: profileData, error: profileError } = await supabase
-        //   .from('profiles')
-        //   .select('nome_completo, tipo_usuario, email')
-        //   .eq('id', session.user.id)
-        //   .single()
-
-        // if (profileError && profileError.code !== 'PGRST116') {
-        //   console.error('Erro ao carregar perfil:', profileError)
-        //   return
-        // }
-
-        // setProfile(profileData || { email: session.user.email })
-      } catch (err) {
-        console.error('Erro ao carregar perfil:', err)
-      } finally {
-        // setLoading(false)
+        setIsAdmin(profile?.tipo_usuario === 'admin')
       }
     }
 
-    loadProfile()
-  }, [router])
-
-  // const handleLogout = async () => {
-  //   try {
-  //     await supabase.auth.signOut()
-  //     router.push('/login')
-  //     router.refresh()
-  //   } catch (error) {
-  //     console.error('Erro ao fazer logout:', error)
-  //   }
-  // }
-
-  // const getTipoUsuarioLabel = (tipo?: string) => {
-  //   switch (tipo) {
-  //     case 'aluno':
-  //       return 'Aluno'
-  //     case 'professor':
-  //       return 'Professor'
-  //     case 'admin':
-  //       return 'Administrador'
-  //     default:
-  //       return 'Usuário'
-  //   }
-  // }
+    verificarAdmin()
+  }, [])
 
   const menuItems = [
     {
@@ -121,10 +72,28 @@ export default function HomePage() {
   return (
     <Container maxWidth='lg'>
       <Box sx={{ mt: 4, mb: 8 }}>
-
         <Typography variant='h4' component='h1' gutterBottom sx={{ mb: 4 }}>
           Sistema de Reforço Escolar
         </Typography>
+
+        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            onClick={() => router.push('/agendamento')}
+          >
+            Agendar Horário
+          </Button>
+
+          {isAdmin && (
+            <Button 
+              variant="contained" 
+              color="secondary"
+              onClick={() => router.push('/alunos-adm/clientes')}
+            >
+              Gerenciar Alunos
+            </Button>
+          )}
+        </Box>
 
         <Grid container spacing={4}>
           {menuItems.map((item) => (

@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server'
 const protectedRoutes = [
   '/dashboard',
   '/agendamento',
-  '/alunos-adm'  // Adicionando rota de admin
+  '/alunos-adm'
 ]
 
 // Define as rotas públicas (que não requerem autenticação)
@@ -25,16 +25,7 @@ export async function middleware(req: NextRequest) {
   
   const supabase = createMiddlewareClient({ 
     req, 
-    res,
-    options: {
-      cookies: {
-        name: "sb-auth",
-        path: "/",
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7
-      }
-    }
+    res
   })
 
   try {
@@ -66,14 +57,24 @@ export async function middleware(req: NextRequest) {
 
     // Verificação especial para rota de admin
     if (pathname.startsWith('/alunos-adm')) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tipo_usuario')
-        .eq('id', session?.user?.id)
-        .single()
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('tipo_usuario')
+          .eq('id', session?.user?.id)
+          .single()
 
-      if (!profile || profile.tipo_usuario !== 'admin') {
-        console.log("🚫 Acesso negado - Usuário não é admin")
+        if (error) {
+          console.error('Erro ao verificar perfil:', error)
+          return NextResponse.redirect(new URL('/', req.url))
+        }
+
+        if (!profile || profile.tipo_usuario !== 'admin') {
+          console.log("🚫 Acesso negado - Usuário não é admin")
+          return NextResponse.redirect(new URL('/', req.url))
+        }
+      } catch (error) {
+        console.error('Erro ao verificar permissões:', error)
         return NextResponse.redirect(new URL('/', req.url))
       }
     }
@@ -86,12 +87,15 @@ export async function middleware(req: NextRequest) {
   }
 }
 
-// Define em quais paths o middleware será executado
+// Corrigindo o matcher para não usar spread operator
 export const config = {
   matcher: [
-    // Aplica o middleware em todas as rotas protegidas
-    ...protectedRoutes,
-    // Aplica o middleware em todas as rotas públicas
-    ...publicRoutes,
+    '/dashboard',
+    '/agendamento',
+    '/alunos-adm',
+    '/alunos-adm/:path*',
+    '/login',
+    '/register',
+    '/forgot-password'
   ]
 }
