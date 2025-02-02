@@ -26,7 +26,7 @@ type Agendamento = {
 };
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const horariosDisponiveis = ["14:00", "15:00", "16:00", "17:00"];
+const horariosDisponiveis = ["14:00", "16:00"];
 
 export default function AgendamentoReforco() {
   const router = useRouter();
