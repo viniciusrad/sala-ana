@@ -11,7 +11,7 @@ import {
   Paper,
   Button,
 } from '@mui/material'
-import { CalendarMonth, Schedule, Person } from '@mui/icons-material'
+import { CalendarMonth, Schedule, Person, Assignment } from '@mui/icons-material'
 
 export default function HomePage() {
   const router = useRouter()
@@ -61,12 +61,12 @@ export default function HomePage() {
       icon: <Schedule sx={{ fontSize: 40 }} />,
       path: '/alunos-horarios',
     },
-    // {
-    //   title: 'Horários',
-    //   description: 'Visualize a grade de horários',
-    //   icon: <Schedule sx={{ fontSize: 40 }} />,
-    //   path: '/horarios',
-    // },
+    {
+      title: 'Relatório Diário',
+      description: 'Registre o conteúdo visto nas aulas',
+      icon: <Assignment sx={{ fontSize: 40 }} />,
+      path: '/relatorio-diario',
+    },
     {
       title: 'Perfil',
       description: 'Gerencie suas informações',
