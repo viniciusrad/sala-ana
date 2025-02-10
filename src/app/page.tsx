@@ -56,11 +56,17 @@ export default function HomePage() {
       path: '/agendamento',
     },
     {
-      title: 'Horários',
-      description: 'Visualize a grade de horários',
+      title: 'Alunos por Horário',
+      description: 'Visualize os alunos agrupados por horário',
       icon: <Schedule sx={{ fontSize: 40 }} />,
-      path: '/horarios',
+      path: '/alunos-horarios',
     },
+    // {
+    //   title: 'Horários',
+    //   description: 'Visualize a grade de horários',
+    //   icon: <Schedule sx={{ fontSize: 40 }} />,
+    //   path: '/horarios',
+    // },
     {
       title: 'Perfil',
       description: 'Gerencie suas informações',

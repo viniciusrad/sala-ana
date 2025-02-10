@@ -77,7 +77,7 @@ export default function AgendamentoReforco() {
     };
 
     carregarUsuario();
-  }, []);
+  }, [router]);
 
   const toggleDia = (dia: string) => {
     setNovosDias((prev) => {

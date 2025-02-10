@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
+        console.error('Erro ao carregar usuário:', error)
         setError('Erro ao carregar usuário')
       } finally {
         setLoading(false)
