@@ -5,7 +5,6 @@ import type { NextRequest } from 'next/server'
 
 // Define as rotas que requerem autenticação
 const protectedRoutes = [
-  '/dashboard',
   '/agendamento',
   '/alunos-adm'
 ]
@@ -49,10 +48,10 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Se houver sessão e o usuário tentar acessar rotas públicas, redireciona para o dashboard
+    // Se houver sessão e o usuário tentar acessar rotas públicas, redireciona para a home
     if (session && isPublicRoute) {
-      console.log("👤 Usuário já autenticado - Redirecionando para dashboard")
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+      console.log("👤 Usuário já autenticado - Redirecionando para home")
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
     // Verificação especial para rota de admin
@@ -90,7 +89,6 @@ export async function middleware(req: NextRequest) {
 // Corrigindo o matcher para não usar spread operator
 export const config = {
   matcher: [
-    '/dashboard',
     '/agendamento',
     '/alunos-adm',
     '/alunos-adm/:path*',
