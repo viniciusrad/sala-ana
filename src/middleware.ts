@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 
 // Define as rotas que requerem autenticação
 const protectedRoutes = [
-  '/alunos-adm'
+  '/teste'
 ]
 
 // Define as rotas públicas (que não requerem autenticação)
