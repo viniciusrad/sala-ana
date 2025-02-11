@@ -45,8 +45,13 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+
+  console.log("🔑 Verificando sessão de detro do componente de login")
+
   // Verificar se já está autenticado
   useEffect(() => {
+
+    console.log("🔑 Verificando sessão de detro do componente de login")
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {

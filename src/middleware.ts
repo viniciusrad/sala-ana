@@ -10,16 +10,17 @@ const protectedRoutes = [
 ]
 
 // Define as rotas públicas (que não requerem autenticação)
-const publicRoutes = [
-  '/login',
-  '/register',
-  '/forgot-password'
-]
+// const publicRoutes = [
+//   '/login',
+//   '/register',
+//   '/forgot-password'
+// ]
 
 export async function middleware(req: NextRequest) {
   console.log("🚀 Iniciando middleware para:", req.nextUrl.pathname)
   console.log("🍪 Cookies presentes:", req.cookies.getAll())
   
+
   const res = NextResponse.next()
   
   const supabase = createMiddlewareClient({ 
@@ -38,7 +39,7 @@ export async function middleware(req: NextRequest) {
     // Verifica se a rota atual é protegida
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     // Verifica se a rota atual é pública
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+    // const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
     // Se for uma rota protegida e não houver sessão, redireciona para o login
     if (isProtectedRoute && !session) {
@@ -49,10 +50,10 @@ export async function middleware(req: NextRequest) {
     }
 
     // Se houver sessão e o usuário tentar acessar rotas públicas, redireciona para a home
-    if (session && isPublicRoute) {
-      console.log("👤 Usuário já autenticado - Redirecionando para home")
-      return NextResponse.redirect(new URL('/', req.url))
-    }
+    // if (session && isPublicRoute) {
+    //   console.log("👤 Usuário já autenticado - Redirecionando para home")
+    //   return NextResponse.redirect(new URL('/', req.url))
+    // }
 
     // Verificação especial para rota de admin
     if (pathname.startsWith('/alunos-adm')) {

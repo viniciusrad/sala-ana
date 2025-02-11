@@ -45,11 +45,28 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
-      router.push('/login')
-      router.refresh()
+      console.log("🔑 Iniciando logout")
+      
+      // Primeiro verifica se ainda tem sessão
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log("Sessão atual:", session)
+
+      if (session) {
+        // Limpa a sessão do Supabase
+        const { error} = await supabase.auth.signOut()
+        if (error) console.error('Erro ao fazer logout:', error)
+      }
+
+      // Limpa o estado local
+      setProfile(null)
+
+      // Força um refresh completo da página
+      window.location.href = '/login'
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
+      // Mesmo com erro, limpa o estado local e redireciona
+      setProfile(null)
+      window.location.href = '/login'
     }
   }
 
