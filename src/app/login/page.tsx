@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   Container,
@@ -13,6 +12,7 @@ import {
   Tab,
   Tabs,
 } from '@mui/material'
+import router from 'next/router'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -37,7 +37,6 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function AuthPage() {
-  const router = useRouter()
   const [tab, setTab] = useState(0)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,20 +45,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
 
 
-  console.log("🔑 Verificando sessão de detro do componente de login")
-
   // Verificar se já está autenticado
   useEffect(() => {
-
-    console.log("🔑 Verificando sessão de detro do componente de login")
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
+      console.log("🔑 Verificando sessão:", session)
+      
       if (session?.user) {
         router.push('/')
       }
     }
     checkSession()
-  }, [router])
+  }, [])
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTab(newValue)
@@ -86,6 +83,9 @@ export default function AuthPage() {
         email: email.trim(),
         password: password.trim(),
       })
+
+
+      console.log("🔑 authData", authData)
 
       console.log('Login response:', { authData, error: signInError })
 
@@ -124,7 +124,7 @@ export default function AuthPage() {
         console.log('Cookies após login:', document.cookie)
 
         // Redireciona para a página inicial
-        router.push('/')
+        window.location.href = '/'
       }
     } catch (error) {
       console.error('Erro completo:', error)

@@ -1,4 +1,4 @@
--- Drop existing table and its dependencies
+s-- Drop existing table and its dependencies
 drop table if exists profiles cascade;
 
 -- Create a table for public profiles
