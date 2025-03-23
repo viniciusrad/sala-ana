@@ -188,6 +188,10 @@ export default function AuthPage() {
             </Alert>
           )}
 
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 1 }}>
+            <img src="./logo.png" alt="Logo" style={{ maxWidth: '50%', height: 'auto' }} />
+          </Box>
+
           <TabPanel value={tab} index={0}>
             <Box component="form" onSubmit={handleLogin}>
               <TextField
