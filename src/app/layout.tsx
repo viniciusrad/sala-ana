@@ -1,36 +1,26 @@
 'use client'
 
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Inter } from 'next/font/google'
 import { Providers } from './providers'
-import Header from "./components/Header";
-import { usePathname } from "next/navigation";
+import Registry from './registry'
+import './globals.css'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] })
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const pathname = usePathname();
-
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Providers>
-          {pathname !== '/login' && <Header />}
-          {children}
-        </Providers>
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        <Registry>
+          <Providers>
+            {children}
+          </Providers>
+        </Registry>
       </body>
     </html>
-  );
+  )
 }
