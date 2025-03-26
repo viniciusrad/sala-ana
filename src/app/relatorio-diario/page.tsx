@@ -19,6 +19,7 @@ import {
   Divider,
 } from "@mui/material";
 import { Assignment, CameraAlt } from "@mui/icons-material";
+import UploadFoto from "@/components/UploadFoto";
 
 interface Relatorio {
   id?: number;
@@ -26,6 +27,7 @@ interface Relatorio {
   data_relatorio?: string;
   conteudo: string;
   dia_semana: string;
+  foto_url?: string;
 }
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
@@ -100,6 +102,11 @@ export default function RelatorioDiarioPage() {
     } finally {
       setSalvando(false);
     }
+  };
+
+  const handleUploadComplete = (url: string) => {
+    setRelatorio((prev) => ({ ...prev, foto_url: url }));
+    setSuccess("Foto enviada com sucesso!");
   };
 
   if (loading) {
@@ -220,6 +227,42 @@ export default function RelatorioDiarioPage() {
               </Button>
             </label>
           </Box>
+
+          <Divider sx={{ my: 4 }} />
+
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Foto do Relatório
+            </Typography>
+            
+            <UploadFoto
+              relatorioId={relatorio.id || Date.now()} // Usar timestamp como ID temporário se não tiver ID
+              onUploadComplete={handleUploadComplete}
+            />
+            
+            {relatorio.foto_url && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Foto enviada com sucesso!
+                </Typography>
+                <Box
+                  component="img"
+                  src={relatorio.foto_url}
+                  alt="Foto do relatório"
+                  sx={{
+                    width: '100%',
+                    maxWidth: 400,
+                    height: 'auto',
+                    objectFit: 'cover',
+                    borderRadius: 1,
+                    border: '1px solid #ddd'
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+
+          <Divider sx={{ my: 4 }} />
 
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button

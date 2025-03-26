@@ -1,18 +1,22 @@
 import { supabase } from './supabase'
 
-export async function uploadRelatorioPhoto(file: File, relatorioId: number) {
+export async function uploadRelatorioPhoto(file: File, relatorioId: number | string) {
   try {
     // Gera um nome único para o arquivo
     const fileExt = file.name.split('.').pop()
-    const fileName = `${relatorioId}-${Math.random().toString(36).substring(2)}.${fileExt}`
-    const filePath = `${fileName}`
+    const fileName = `${relatorioId}-${Date.now()}.${fileExt}`
+    const filePath = `relatorios/${fileName}`
 
     // Faz o upload do arquivo
     const { error: uploadError } = await supabase.storage
       .from('relatorio-photo')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
 
     if (uploadError) {
+      console.error('Erro de upload:', uploadError)
       throw uploadError
     }
 
@@ -20,6 +24,8 @@ export async function uploadRelatorioPhoto(file: File, relatorioId: number) {
     const { data: { publicUrl } } = supabase.storage
       .from('relatorio-photo')
       .getPublicUrl(filePath)
+
+    console.log('Upload bem-sucedido:', publicUrl)
 
     return {
       url: publicUrl,
