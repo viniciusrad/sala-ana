@@ -1,8 +1,8 @@
 'use client'
 
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { StyledEngineProvider } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
+import { createTheme } from '@mui/material'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 const theme = createTheme({
@@ -19,13 +19,12 @@ const theme = createTheme({
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <StyledEngineProvider injectFirst>
-      <AuthProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          {children}
-        </ThemeProvider>
-      </AuthProvider>
-    </StyledEngineProvider>
+    <AuthProvider>
+
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
+    </AuthProvider>
   )
 } 
