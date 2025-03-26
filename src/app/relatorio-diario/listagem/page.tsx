@@ -27,7 +27,6 @@ interface Relatorio {
   conteudo: string
   dia_semana: string
   created_at: string
-  foto_url?: string
 }
 
 export default function ListagemRelatoriosPage() {
@@ -127,7 +126,6 @@ export default function ListagemRelatoriosPage() {
                 <TableCell>Data do Relatório</TableCell>
                 <TableCell>Dia da Semana</TableCell>
                 <TableCell>Conteúdo</TableCell>
-                <TableCell>Foto</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -146,23 +144,6 @@ export default function ListagemRelatoriosPage() {
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>
                     {relatorio.conteudo}
-                  </TableCell>
-                  <TableCell>
-                    {relatorio.foto_url && (
-                      <Box
-                        component="img"
-                        src={relatorio.foto_url}
-                        alt="Foto do relatório"
-                        sx={{
-                          width: 100,
-                          height: 100,
-                          objectFit: 'cover',
-                          borderRadius: 1,
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => window.open(relatorio.foto_url, '_blank')}
-                      />
-                    )}
                   </TableCell>
                 </TableRow>
               ))}

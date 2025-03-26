@@ -19,7 +19,6 @@ import {
   Divider,
 } from "@mui/material";
 import { Assignment, CameraAlt } from "@mui/icons-material";
-import UploadFoto from "@/components/UploadFoto";
 
 interface Relatorio {
   id?: number;
@@ -27,7 +26,6 @@ interface Relatorio {
   data_relatorio?: string;
   conteudo: string;
   dia_semana: string;
-  foto_url?: string;
 }
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
@@ -81,26 +79,20 @@ export default function RelatorioDiarioPage() {
     setSuccess(null);
 
     try {
-      const { data: novoRelatorio, error } = await supabase.from("relatorios").insert([
+      const { error } = await supabase.from("relatorios").insert([
         {
           ...relatorio,
           data_relatorio: new Date().toISOString(),
         },
-      ]).select().single();
+      ]);
 
       if (error) throw error;
-
-      setRelatorio(prev => ({
-        ...prev,
-        id: novoRelatorio.id
-      }));
 
       setSuccess("Relatório salvo com sucesso!");
       setRelatorio({
         ...relatorio,
         conteudo: "",
         dia_semana: "",
-        foto_url: "",
       });
     } catch (err) {
       console.error("Erro ao salvar relatório:", err);
@@ -108,13 +100,6 @@ export default function RelatorioDiarioPage() {
     } finally {
       setSalvando(false);
     }
-  };
-
-  const handleUploadComplete = (url: string) => {
-    setRelatorio(prev => ({
-      ...prev,
-      foto_url: url
-    }));
   };
 
   if (loading) {
@@ -247,30 +232,6 @@ export default function RelatorioDiarioPage() {
           </Box>
         </Box>
       </Paper>
-
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Foto do Relatório
-        </Typography>
-        {relatorio.foto_url && (
-          <Box
-            component="img"
-            src={relatorio.foto_url}
-            alt="Foto do relatório"
-            sx={{
-              width: 200,
-              height: 200,
-              objectFit: 'cover',
-              borderRadius: 1,
-              mb: 2
-            }}
-          />
-        )}
-        <UploadFoto
-          relatorioId={relatorio.id || 0}
-          onUploadComplete={handleUploadComplete}
-        />
-      </Box>
     </Container>
   );
 }

@@ -8,7 +8,7 @@ export async function uploadRelatorioPhoto(file: File, relatorioId: number) {
     const filePath = `${fileName}`
 
     // Faz o upload do arquivo
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('relatorio-photo')
       .upload(filePath, file)
 
