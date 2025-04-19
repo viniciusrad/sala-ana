@@ -50,7 +50,7 @@ const materiasDisponiveis = [
 
 export default function CadastroProfessor() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -61,6 +61,15 @@ export default function CadastroProfessor() {
     materias: '',
     data_registro: new Date().toISOString(),
   })
+
+  useEffect(() => {
+    // Simulando um carregamento inicial
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -102,6 +111,26 @@ export default function CadastroProfessor() {
         : [...materiasAtuais, materia]
       return { ...prev, materias: novaMateria.join(';') }
     })
+  }
+
+  if (loading) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          Carregando...
+        </Typography>
+      </Box>
+    )
   }
 
   return (
