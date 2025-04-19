@@ -26,7 +26,7 @@ type Agendamento = {
 };
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const horariosDisponiveis = ["14:00", "16:00"];
+const horariosDisponiveis = [{text: "14:00/16:00", value: "14:00"}, {text: "16:00/18:00", value: "16:00"}];
 
 export default function AgendamentoReforco() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function AgendamentoReforco() {
     id: string;
     email?: string;
     nome_completo?: string;
-    tipo_usuario?: "aluno" | "professor" | "admin";
+    tipo_usuario?: "aluno" | "professor" | "admin" | "responsavel"; // TODO: criar interface para o tipo de usuario
   } | null>(null);
 
   useEffect(() => {
@@ -331,14 +331,14 @@ export default function AgendamentoReforco() {
                     <Button
                       key={`${dia}-${horario}`}
                       variant={
-                        novosHorarios[dia]?.includes(horario)
+                        novosHorarios[dia]?.includes(horario.value)
                           ? "contained"
                           : "outlined"
                       }
-                      onClick={() => toggleHorario(dia, horario)}
+                      onClick={() => toggleHorario(dia, horario.value)}
                       sx={{ flex: 1 }}
                     >
-                      {horario}
+                      {horario.text}
                     </Button>
                   ))}
                 </Box>
@@ -347,13 +347,6 @@ export default function AgendamentoReforco() {
           </Box>
         )}
 
-        <Button
-          variant="contained"
-          onClick={adicionarAgendamento}
-          sx={{ mt: 4 }}
-        >
-          Agendar
-        </Button>
         <Button
           variant="contained"
           onClick={adicionarAgendamento}
@@ -401,7 +394,7 @@ export default function AgendamentoReforco() {
                 <TableRow>
                   <TableCell>Dia</TableCell>
                   {horariosDisponiveis.map((horario) => (
-                    <TableCell key={horario} align="center">{horario}</TableCell>
+                    <TableCell key={horario.value} align="center">{horario.text}</TableCell>
                   ))}
                 </TableRow>
               </TableHead>
@@ -410,7 +403,7 @@ export default function AgendamentoReforco() {
                   <TableRow key={dia}>
                     <TableCell>{dia}</TableCell>
                     {horariosDisponiveis.map((horario) => {
-                      const total = calcularTotalAlunosPorHorario(dia, horario);
+                      const total = calcularTotalAlunosPorHorario(dia, horario.value);
                       const lotado = total >= maxAlunos;
                       return (
                         <TableCell 
