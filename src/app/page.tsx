@@ -79,20 +79,20 @@ export default function HomePage() {
     <Container maxWidth='lg'>
       <Box sx={{ mt: 4, mb: 8 }}>
         <Typography variant='h4' component='h1' gutterBottom sx={{ mb: 4 }}>
-          Sistema de Reforço Escolar
+          Guia de Reforço
         </Typography>
 
         <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => router.push('/agendamento')}
           >
             Agendar Horário
           </Button>
 
           {isAdmin && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="secondary"
               onClick={() => router.push('/alunos-adm/clientes')}
             >
@@ -103,7 +103,7 @@ export default function HomePage() {
 
         <Grid container spacing={4}>
           {menuItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item.title}>
+            <Grid item xs={6} sm={6} key={item.title}>
               <Paper
                 sx={{
                   p: 3,
