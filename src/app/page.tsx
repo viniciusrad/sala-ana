@@ -94,7 +94,7 @@ export default function HomePage() {
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => router.push('/alunos-adm/clientes')}
+              onClick={() => router.push('/alunos-adm')}
             >
               Gerenciar Alunos
             </Button>
