@@ -169,7 +169,7 @@ export default function AgendamentoReforco() {
     if (!usuario?.id) return;
 
     try {
-      let query = supabase
+      const query = supabase
         .from('agendamentos')
         .select(`
           *,
