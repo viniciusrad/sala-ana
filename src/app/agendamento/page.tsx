@@ -371,7 +371,7 @@ export default function AgendamentoReforco() {
               </TableHead>
               <TableBody>
                 {Object.entries(novosHorarios).map(([dia, horarios]) => (
-                  <TableRow key={dia}>
+                  <TableRow key={`horario - ${horarios.join(", ")}`}>
                     <TableCell>{dia}</TableCell>
                     <TableCell>{horarios.join(", ")}</TableCell>
                   </TableRow>
@@ -407,7 +407,7 @@ export default function AgendamentoReforco() {
                       const lotado = total >= maxAlunos;
                       return (
                         <TableCell 
-                          key={`${dia}-${horario}`} 
+                          key={`${dia}-${horario.value}`} 
                           align="center"
                           sx={{
                             bgcolor: lotado ? 'error.main' : total > 0 ? 'success.light' : 'inherit',
