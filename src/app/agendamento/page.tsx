@@ -132,7 +132,7 @@ export default function AgendamentoReforco() {
       );
 
       const { data, error } = await supabase
-        .from('horarios')
+        .from('agendamentos')
         .insert(registros)
         .select();
 
@@ -170,7 +170,7 @@ export default function AgendamentoReforco() {
 
     try {
       let query = supabase
-        .from('horarios')
+        .from('agendamentos')
         .select(`
           *,
           profiles:id_aluno (
@@ -181,9 +181,9 @@ export default function AgendamentoReforco() {
         .eq('ativo', true);
 
       // Se não for admin, filtra apenas os agendamentos do usuário
-      if (usuario.tipo_usuario !== 'admin') {
-        query = query.eq('id_aluno', usuario.id);
-      }
+      // if (usuario.tipo_usuario !== 'admin') {
+      //   query = query.eq('id_aluno', usuario.id);
+      // }
 
       const { data, error } = await query;
 
