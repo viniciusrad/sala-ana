@@ -101,7 +101,7 @@ export default function HomePage() {
           )}
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={4} marginTop={2}>
           {menuItems.map((item) => (
             <Grid item xs={6} sm={6} key={item.title}>
               <Paper
