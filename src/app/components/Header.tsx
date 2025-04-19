@@ -11,9 +11,14 @@ import {
   Box,
   Avatar,
   Container,
-  Chip
+  Chip,
+  IconButton,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme
 } from '@mui/material'
-import { Person } from '@mui/icons-material'
+import { Person, Menu as MenuIcon } from '@mui/icons-material'
 
 interface UserProfile {
   nome_completo?: string
@@ -24,11 +29,14 @@ interface UserProfile {
 export default function Header() {
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   useEffect(() => {
     const carregarPerfil = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -68,14 +76,26 @@ export default function Header() {
     }
   }
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleNavigation = (path: string) => {
+    router.push(path)
+    handleMenuClose()
+  }
+
   return (
-    <AppBar position="static" color="default" elevation={1}>
+    <AppBar position="static" color="default" elevation={1} sx={{ paddingX: 0 }}>
       <Container maxWidth="lg">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-
           {profile ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, padding: ".5rem" }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, padding: ".5rem", paddingX: 0, width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingX: 0 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
                   <Person />
                 </Avatar>
@@ -92,24 +112,53 @@ export default function Header() {
                   />
                 </Box>
               </Box>
-              <Button 
-              variant="text" 
-              onClick={() => router.push('/')} 
-              sx={{ color: 'primary.main' }}
-            >
-              Início
-            </Button>
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={handleLogout}
+
+              <Box sx={{ marginLeft: 'auto' }}>
+                {isMobile ? (
+                  <IconButton
+                    edge="end"
+                    color="inherit"
+                    aria-label="menu"
+                    onClick={handleMenuOpen}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                ) : (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      variant="text"
+                      onClick={() => router.push('/')}
+                      sx={{ color: 'primary.main' }}
+                    >
+                      Início
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleLogout}
+                    >
+                      Sair
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
               >
-                Sair
-              </Button>
+                <MenuItem onClick={() => handleNavigation('/')}>
+                  Início
+                </MenuItem>
+                <MenuItem onClick={handleLogout}>
+                  Sair
+                </MenuItem>
+              </Menu>
             </Box>
           ) : (
-            <Button 
-              color="inherit" 
+            <Button
+              color="inherit"
               onClick={() => router.push('/login')}
             >
               Entrar
