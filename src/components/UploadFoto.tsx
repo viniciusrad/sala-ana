@@ -13,7 +13,7 @@ import {
   Alert,
   Typography,
 } from '@mui/material'
-import { CloudUpload, CameraAlt } from '@mui/icons-material'
+import { CameraAlt } from '@mui/icons-material'
 import { uploadRelatorioPhoto } from '@/lib/upload'
 
 export type UploadFotoHandle = {

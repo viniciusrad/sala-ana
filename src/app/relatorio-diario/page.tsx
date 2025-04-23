@@ -18,7 +18,7 @@ import {
   MenuItem,
   Divider,
 } from '@mui/material';
-import { Assignment, CameraAlt } from '@mui/icons-material';
+import { Assignment } from '@mui/icons-material';
 import UploadFoto, { UploadFotoHandle } from '@/components/UploadFoto';
 
 interface Relatorio {
