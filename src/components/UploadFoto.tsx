@@ -57,6 +57,7 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
         setLoading(true)
         setError(null)
         const { url } = await uploadRelatorioPhoto(file, relatorioId)
+        setPreviewUrl(null)
         return url
       } catch (err) {
         console.error('Erro ao fazer upload:', err)
