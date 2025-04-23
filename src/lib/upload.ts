@@ -9,7 +9,7 @@ export async function uploadRelatorioPhoto(file: File, relatorioId: number | str
 
     // Faz o upload do arquivo
     const { error: uploadError } = await supabase.storage
-      .from('relatorio-photo')
+      .from('relatoriophoto')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -22,7 +22,7 @@ export async function uploadRelatorioPhoto(file: File, relatorioId: number | str
 
     // Gera a URL pública do arquivo
     const { data: { publicUrl } } = supabase.storage
-      .from('relatorio-photo')
+      .from('relatoriophoto')
       .getPublicUrl(filePath)
 
     console.log('Upload bem-sucedido:', publicUrl)

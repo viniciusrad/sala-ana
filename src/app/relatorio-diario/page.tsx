@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
   Container,
   Box,
@@ -17,9 +17,9 @@ import {
   Select,
   MenuItem,
   Divider,
-} from "@mui/material";
-import { Assignment, CameraAlt } from "@mui/icons-material";
-import UploadFoto from "@/components/UploadFoto";
+} from '@mui/material';
+import { Assignment, CameraAlt } from '@mui/icons-material';
+import UploadFoto, { UploadFotoHandle } from '@/components/UploadFoto';
 
 interface Relatorio {
   id?: number;
@@ -27,10 +27,10 @@ interface Relatorio {
   data_relatorio?: string;
   conteudo: string;
   dia_semana: string;
-  foto_url?: string;
+  img_url?: string;
 }
 
-const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 export default function RelatorioDiarioPage() {
   const router = useRouter();
@@ -39,10 +39,12 @@ export default function RelatorioDiarioPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [relatorio, setRelatorio] = useState<Relatorio>({
-    id_aluno: "",
-    conteudo: "",
-    dia_semana: "",
+    id_aluno: '',
+    conteudo: '',
+    dia_semana: '',
   });
+
+  const uploadRef = useRef<UploadFotoHandle>(null);
 
   useEffect(() => {
     const carregarUsuario = async () => {
@@ -52,7 +54,7 @@ export default function RelatorioDiarioPage() {
         } = await supabase.auth.getSession();
 
         if (!session?.user) {
-          router.push("/login");
+          router.push('/login');
           return;
         }
 
@@ -61,7 +63,7 @@ export default function RelatorioDiarioPage() {
           id_aluno: session.user.id,
         }));
       } catch (err) {
-        console.error("Erro ao carregar usuário:", err);
+        console.error('Erro ao carregar usuário:', err);
       } finally {
         setLoading(false);
       }
@@ -72,7 +74,7 @@ export default function RelatorioDiarioPage() {
 
   const handleSalvar = async () => {
     if (!relatorio.conteudo || !relatorio.dia_semana) {
-      setError("Por favor, preencha todos os campos");
+      setError('Por favor, preencha todos os campos');
       return;
     }
 
@@ -81,42 +83,41 @@ export default function RelatorioDiarioPage() {
     setSuccess(null);
 
     try {
-      const { error } = await supabase.from("relatorios").insert([
+      const fotoUrl = await uploadRef.current?.upload();
+
+      const { error } = await supabase.from('relatorios').insert([
         {
           ...relatorio,
+          img_url: fotoUrl || null,
           data_relatorio: new Date().toISOString(),
         },
       ]);
 
       if (error) throw error;
 
-      setSuccess("Relatório salvo com sucesso!");
+      setSuccess('Relatório salvo com sucesso!');
       setRelatorio({
         ...relatorio,
-        conteudo: "",
-        dia_semana: "",
+        conteudo: '',
+        dia_semana: '',
+        img_url: fotoUrl || undefined,
       });
     } catch (err) {
-      console.error("Erro ao salvar relatório:", err);
-      setError("Erro ao salvar relatório. Por favor, tente novamente.");
+      console.error('Erro ao salvar relatório:', err);
+      setError('Erro ao salvar relatório. Por favor, tente novamente.');
     } finally {
       setSalvando(false);
     }
-  };
-
-  const handleUploadComplete = (url: string) => {
-    setRelatorio((prev) => ({ ...prev, foto_url: url }));
-    setSuccess("Foto enviada com sucesso!");
   };
 
   if (loading) {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "80vh",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh',
         }}
       >
         <CircularProgress />
@@ -130,10 +131,10 @@ export default function RelatorioDiarioPage() {
         Relatório Diário
       </Typography>
 
-      <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
         <Button
           variant="outlined"
-          onClick={() => router.push("/relatorio-diario/listagem")}
+          onClick={() => router.push('/relatorio-diario/listagem')}
           startIcon={<Assignment />}
         >
           Ver Meus Relatórios
@@ -155,10 +156,10 @@ export default function RelatorioDiarioPage() {
 
         <Box
           component="form"
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            Data do relatório: {new Date().toLocaleDateString("pt-BR")}
+            Data do relatório: {new Date().toLocaleDateString('pt-BR')}
           </Typography>
 
           <Divider sx={{ my: 1 }} />
@@ -190,43 +191,13 @@ export default function RelatorioDiarioPage() {
             label="Conteúdo visto na aula"
             value={relatorio.conteudo}
             onChange={(e) =>
-              setRelatorio((prev) => ({ ...prev, conteudo: e.target.value }))
+              setRelatorio((prev) => ({
+                ...prev,
+                conteudo: e.target.value,
+              }))
             }
             placeholder="Descreva o que foi estudado na aula de hoje..."
           />
-
-          {/* Componente de captura de foto - visível apenas em dispositivos móveis */}
-          <Box
-            sx={{
-              display: { xs: "block", sm: "none" }, // Visível apenas em telas pequenas (mobile)
-            }}
-          >
-            <input
-              accept="image/*"
-              style={{ display: "none" }}
-              id="foto-aula"
-              type="file"
-              capture="environment"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  // Aqui você pode adicionar a lógica para processar a foto
-                  // Por exemplo, fazer upload para o Supabase Storage
-                  console.log("Foto capturada:", e.target.files[0]);
-                }
-              }}
-            />
-            <label htmlFor="foto-aula">
-              <Button
-                variant="outlined"
-                component="span"
-                fullWidth
-                startIcon={<CameraAlt />}
-                sx={{ mt: 1 }}
-              >
-                Tirar Foto da Aula
-              </Button>
-            </label>
-          </Box>
 
           <Divider sx={{ my: 4 }} />
 
@@ -234,20 +205,20 @@ export default function RelatorioDiarioPage() {
             <Typography variant="h6" gutterBottom>
               Foto do Relatório
             </Typography>
-            
+
             <UploadFoto
-              relatorioId={relatorio.id || Date.now()} // Usar timestamp como ID temporário se não tiver ID
-              onUploadComplete={handleUploadComplete}
+              ref={uploadRef}
+              relatorioId={relatorio.id || Date.now()}
             />
-            
-            {relatorio.foto_url && (
+
+            {relatorio.img_url && (
               <Box sx={{ mt: 3 }}>
                 <Typography variant="subtitle1" gutterBottom>
                   Foto enviada com sucesso!
                 </Typography>
                 <Box
                   component="img"
-                  src={relatorio.foto_url}
+                  src={relatorio.img_url}
                   alt="Foto do relatório"
                   sx={{
                     width: '100%',
@@ -255,7 +226,7 @@ export default function RelatorioDiarioPage() {
                     height: 'auto',
                     objectFit: 'cover',
                     borderRadius: 1,
-                    border: '1px solid #ddd'
+                    border: '1px solid #ddd',
                   }}
                 />
               </Box>
@@ -264,13 +235,13 @@ export default function RelatorioDiarioPage() {
 
           <Divider sx={{ my: 4 }} />
 
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
               onClick={handleSalvar}
               disabled={salvando}
             >
-              {salvando ? "Salvando..." : "Salvar Relatório"}
+              {salvando ? 'Salvando...' : 'Salvar Relatório'}
             </Button>
           </Box>
         </Box>
