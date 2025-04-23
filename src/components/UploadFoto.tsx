@@ -129,4 +129,6 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
   }
 )
 
+UploadFoto.displayName = 'UploadFoto'
+
 export default UploadFoto
