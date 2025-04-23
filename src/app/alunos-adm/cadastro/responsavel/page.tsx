@@ -52,7 +52,7 @@ export default function CadastroResponsavel() {
     const carregarAlunos = async () => {
       try {
         const { data, error } = await supabase
-          .from('alunos')
+          .from('aluno')
           .select('id, nome')
           .order('nome')
 
