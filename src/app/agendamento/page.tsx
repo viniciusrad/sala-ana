@@ -33,6 +33,7 @@ export default function AgendamentoReforco() {
   const router = useRouter();
   const maxAlunos = 8;
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [agendamentosPessoais, setAgendamentosPessoais] = useState<Agendamento[]>([]);
   const [novosDias, setNovosDias] = useState<string[]>([]);
   const [novosHorarios, setNovosHorarios] = useState<{
     [dia: string]: string[];
@@ -223,7 +224,7 @@ export default function AgendamentoReforco() {
       if (agendamentosData) {
         // Obtemos todos os IDs de professores únicos
         const professorIds = [...new Set(agendamentosData.map(a => a.professor_id).filter(Boolean))];
-        
+
         // Carregamos as informações dos professores
         const { data: professoresData, error: professoresError } = await supabase
           .from('professor')
@@ -272,6 +273,16 @@ export default function AgendamentoReforco() {
         }, []);
 
         setAgendamentos(agendamentosAgrupados);
+
+        // Filtra os agendamentos para mostrar apenas os do aluno logado
+        if (usuario?.tipo_usuario === 'aluno') {
+          const agendamentosFiltrados = agendamentosAgrupados.filter(
+            agendamento => agendamento.aluno === usuario.nome_completo
+          );
+          setAgendamentosPessoais(agendamentosFiltrados);
+        } else {
+          setAgendamentosPessoais(agendamentosAgrupados);
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar agendamentos:', err);
@@ -312,9 +323,7 @@ export default function AgendamentoReforco() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* <Typography variant="h4" component="h1" gutterBottom>
-        Agendamento de Reforço Educacional
-      </Typography> */}
+
 
       <Box mb={4}>
         <FormControl fullWidth>
@@ -340,15 +349,7 @@ export default function AgendamentoReforco() {
           {usuario?.tipo_usuario === 'admin' ? 'Gerenciar Agendamentos' : 'Agendamento Semanal'}
         </Typography>
         <Grid container spacing={4}>
-          {/* <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Nome do Aluno"
-              value={novoAluno}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNovoAluno(e.target.value)}
-              variant="outlined"
-            />
-          </Grid> */}
+
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle1" gutterBottom>
               Dias da Semana (selecione até 3)
@@ -370,17 +371,15 @@ export default function AgendamentoReforco() {
 
         {novosDias.length > 0 && (
           <Box mt={4}>
-            {/* <Typography variant="subtitle1" gutterBottom>
-              Horários Disponíveis
-            </Typography> */}
+
             {novosDias.map((dia) => (
               <Box key={dia} mt={2}>
                 <Typography variant="h4" gutterBottom>
                   {dia}
                 </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Horários
-                  </Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  Horários
+                </Typography>
                 <Box display="flex" gap={1} flexWrap="wrap">
                   <div>
                     {horariosDisponiveis.map((horario) => (
@@ -429,7 +428,7 @@ export default function AgendamentoReforco() {
         )}
 
         <Button
-          variant="contained" 
+          variant="contained"
           onClick={adicionarAgendamento}
           sx={{ mt: 4, marginLeft: "1rem" }}
         >
@@ -511,7 +510,7 @@ export default function AgendamentoReforco() {
           {usuario?.tipo_usuario === 'admin' ? 'Todos os Agendamentos' : 'Meus Agendamentos'}
         </Typography>
         <Grid container spacing={4}>
-          {agendamentos.map((agendamento, index) => (
+          {(usuario?.tipo_usuario === 'aluno' ? agendamentosPessoais : agendamentos).map((agendamento, index) => (
             <Grid item key={index} xs={12} md={6}>
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
