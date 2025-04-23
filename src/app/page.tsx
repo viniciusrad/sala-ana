@@ -60,6 +60,7 @@ export default function HomePage() {
       description: 'Visualize os alunos agrupados por horário',
       icon: <Schedule sx={{ fontSize: 40 }} />,
       path: '/alunos-horarios',
+      admin: true,
     },
     {
       title: 'Relatório Diário',
@@ -102,39 +103,41 @@ export default function HomePage() {
         </Box>
 
         <Grid container spacing={4} marginTop={2}>
-          {menuItems.map((item) => (
-            <Grid item xs={6} sm={6} key={item.title}>
-              <Paper
-                sx={{
-                  p: 3,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                  },
-                }}
-                onClick={() => router.push(item.path)}
-              >
-                {item.icon}
-                <Typography variant='h6' component='h2' sx={{ mt: 2 }}>
-                  {item.title}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ mt: 1 }}
+          {menuItems.map((item) => 
+            (!item.admin || isAdmin) && (
+              <Grid item xs={6} sm={6} key={item.title}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    },
+                  }}
+                  onClick={() => router.push(item.path)}
                 >
-                  {item.description}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
+                  {item.icon}
+                  <Typography variant='h6' component='h2' sx={{ mt: 2 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mt: 1 }}
+                  >
+                    {item.description}
+                  </Typography>
+                </Paper>
+              </Grid>
+            )
+          )}
         </Grid>
       </Box>
     </Container>
