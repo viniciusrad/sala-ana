@@ -95,7 +95,12 @@ export default function RelatoriosAlunosPage() {
           </TableHead>
           <TableBody>
             {alunos.map(aluno => (
-              <TableRow key={aluno.id}>
+              <TableRow
+                key={aluno.id}
+                hover
+                sx={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/relatorios-alunos/${aluno.id}`)}
+              >
                 <TableCell>{aluno.nome}</TableCell>
                 <TableCell align='right'>{aluno.quantidade}</TableCell>
               </TableRow>
