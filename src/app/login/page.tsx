@@ -12,7 +12,7 @@ import {
   Tab,
   Tabs,
 } from '@mui/material'
-import router from 'next/router'
+import { useRouter } from 'next/navigation'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -43,6 +43,7 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
 
   // Verificar se já está autenticado
