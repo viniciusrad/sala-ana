@@ -13,9 +13,19 @@ import {
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person, Assignment } from '@mui/icons-material'
 
+interface Relatorio {
+  id: number
+  data_relatorio: string
+  conteudo: string
+  dia_semana: string
+  img_url?: string | null
+}
+
 export default function HomePage() {
   const router = useRouter()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [tipoUsuario, setTipoUsuario] = useState<'aluno' | 'admin' | 'professor' | null>(null)
+  const [relatorios, setRelatorios] = useState<Relatorio[]>([])
 
   // Verificar se existe sessão
   useEffect(() => {
@@ -32,20 +42,33 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    const verificarAdmin = async () => {
+    const carregarDados = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('tipo_usuario')
-          .eq('id', session.user.id)
-          .single()
+      if (!session?.user) return
 
-        setIsAdmin(profile?.tipo_usuario === 'admin')
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tipo_usuario')
+        .eq('id', session.user.id)
+        .single()
+
+      const tipo = profile?.tipo_usuario as 'aluno' | 'admin' | 'professor' | null
+      setIsAdmin(tipo === 'admin')
+      setTipoUsuario(tipo)
+
+      if (tipo === 'aluno') {
+        const { data } = await supabase
+          .from('relatorios')
+          .select('*')
+          .eq('id_aluno', session.user.id)
+          .order('data_relatorio', { ascending: false })
+          .limit(3)
+
+        setRelatorios(data || [])
       }
     }
 
-    verificarAdmin()
+    carregarDados()
   }, [])
 
   const menuItems = [
@@ -67,6 +90,13 @@ export default function HomePage() {
       description: 'Registre o conteúdo visto nas aulas',
       icon: <Assignment sx={{ fontSize: 40 }} />,
       path: '/relatorio-diario',
+    },
+    {
+      title: 'Relatórios por Aluno',
+      description: 'Veja quantos relatórios cada aluno possui',
+      icon: <Assignment sx={{ fontSize: 40 }} />,
+      path: '/relatorios-alunos',
+      admin: true,
     },
     {
       title: 'Perfil',
@@ -139,6 +169,32 @@ export default function HomePage() {
             )
           )}
         </Grid>
+
+        {!isAdmin && tipoUsuario === 'aluno' && (
+          <Box sx={{ mt: 4 }}>
+            <Typography variant='h5' component='h2' gutterBottom>
+              Meus Últimos Relatórios
+            </Typography>
+            {relatorios.map((rel) => (
+              <Paper key={rel.id} sx={{ p: 2, mb: 2 }}>
+                <Typography variant='subtitle2' color='text.secondary'>
+                  {new Date(rel.data_relatorio).toLocaleDateString('pt-BR')} - {rel.dia_semana}
+                </Typography>
+                {rel.img_url && (
+                  <Box
+                    component='img'
+                    src={rel.img_url}
+                    alt='Imagem do relatório'
+                    sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
+                  />
+                )}
+                <Typography variant='body1' sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
+                  {rel.conteudo}
+                </Typography>
+              </Paper>
+            ))}
+          </Box>
+        )}
       </Box>
     </Container>
   )
