@@ -17,7 +17,9 @@ import {
   TableRow,
   Button,
   Alert,
-  Chip
+  Chip,
+  Dialog,
+  DialogContent
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 
@@ -26,6 +28,7 @@ interface Relatorio {
   data_relatorio: string
   conteudo: string
   dia_semana: string
+  img_url?: string | null
 }
 
 export default function RelatoriosAlunoDetalhe() {
@@ -37,6 +40,7 @@ export default function RelatoriosAlunoDetalhe() {
   const [error, setError] = useState<string | null>(null)
   const [alunoNome, setAlunoNome] = useState<string>('')
   const [relatorios, setRelatorios] = useState<Relatorio[]>([])
+  const [imagemSelecionada, setImagemSelecionada] = useState<string | null>(null)
 
   useEffect(() => {
     const carregar = async () => {
@@ -73,7 +77,7 @@ export default function RelatoriosAlunoDetalhe() {
 
         const { data, error } = await supabase
           .from('relatorios')
-          .select('*')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url')
           .eq('id_aluno', alunoId)
           .order('data_relatorio', { ascending: false })
 
@@ -138,22 +142,51 @@ export default function RelatoriosAlunoDetalhe() {
                 <TableCell>Data do Relatório</TableCell>
                 <TableCell>Dia da Semana</TableCell>
                 <TableCell>Conteúdo</TableCell>
+                <TableCell>Foto</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {relatorios.map((relatorio) => (
-                <TableRow key={relatorio.id}>
+                <TableRow
+                  key={relatorio.id}
+                  hover
+                  sx={{ cursor: relatorio.img_url ? 'pointer' : 'default' }}
+                  onClick={() => relatorio.img_url && setImagemSelecionada(relatorio.img_url)}
+                >
                   <TableCell>{formatarData(relatorio.data_relatorio)}</TableCell>
                   <TableCell>
                     <Chip label={relatorio.dia_semana} color='primary' variant='outlined' size='small' />
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{relatorio.conteudo}</TableCell>
+                  <TableCell>
+                    {relatorio.img_url && (
+                      <Box
+                        component='img'
+                        src={relatorio.img_url}
+                        alt='Miniatura do relatório'
+                        sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                      />
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
+
+      <Dialog open={Boolean(imagemSelecionada)} onClose={() => setImagemSelecionada(null)} maxWidth='lg'>
+        <DialogContent>
+          {imagemSelecionada && (
+            <Box
+              component='img'
+              src={imagemSelecionada}
+              alt='Foto do relatório'
+              sx={{ width: '100%', height: 'auto', maxWidth: 600 }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Container>
   )
 }
