@@ -18,7 +18,7 @@ interface Relatorio {
   data_relatorio: string
   conteudo: string
   dia_semana: string
-  img_url?: string | null
+  img_urls?: string[]
 }
 
 export default function HomePage() {
@@ -64,7 +64,11 @@ export default function HomePage() {
           .order('data_relatorio', { ascending: false })
           .limit(3)
 
-        setRelatorios(data || [])
+        const parsed = (data || []).map((r) => ({
+          ...r,
+          img_urls: r.img_url ? (JSON.parse(r.img_url) as string[]) : [],
+        }))
+        setRelatorios(parsed)
       }
     }
 
@@ -180,10 +184,10 @@ export default function HomePage() {
                 <Typography variant='subtitle2' color='text.secondary'>
                   {new Date(rel.data_relatorio).toLocaleDateString('pt-BR')} - {rel.dia_semana}
                 </Typography>
-                {rel.img_url && (
+                {rel.img_urls && rel.img_urls[0] && (
                   <Box
                     component='img'
-                    src={rel.img_url}
+                    src={rel.img_urls[0]}
                     alt='Imagem do relatório'
                     sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
                   />

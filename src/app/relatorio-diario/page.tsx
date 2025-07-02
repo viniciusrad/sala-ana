@@ -27,7 +27,7 @@ interface Relatorio {
   data_relatorio?: string;
   conteudo: string;
   dia_semana: string;
-  img_url?: string;
+  img_urls?: string[];
 }
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
@@ -42,6 +42,7 @@ export default function RelatorioDiarioPage() {
     id_aluno: '',
     conteudo: '',
     dia_semana: '',
+    img_urls: [],
   });
 
   const uploadRef = useRef<UploadFotoHandle>(null);
@@ -83,12 +84,12 @@ export default function RelatorioDiarioPage() {
     setSuccess(null);
 
     try {
-      const fotoUrl = await uploadRef.current?.upload();
+      const fotoUrls = await uploadRef.current?.upload();
 
       const { error } = await supabase.from('relatorios').insert([
         {
           ...relatorio,
-          img_url: fotoUrl || null,
+          img_url: fotoUrls && fotoUrls.length > 0 ? JSON.stringify(fotoUrls) : null,
           data_relatorio: new Date().toISOString(),
         },
       ]);
@@ -100,7 +101,7 @@ export default function RelatorioDiarioPage() {
         ...relatorio,
         conteudo: '',
         dia_semana: '',
-        img_url: fotoUrl || undefined,
+        img_urls: fotoUrls || [],
       });
     } catch (err) {
       console.error('Erro ao salvar relatório:', err);
@@ -211,24 +212,28 @@ export default function RelatorioDiarioPage() {
               relatorioId={relatorio.id || Date.now()}
             />
 
-            {relatorio.img_url && (
+            {relatorio.img_urls && relatorio.img_urls.length > 0 && (
               <Box sx={{ mt: 3 }}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Foto enviada com sucesso!
+                  Fotos enviadas com sucesso!
                 </Typography>
-                <Box
-                  component="img"
-                  src={relatorio.img_url}
-                  alt="Foto do relatório"
-                  sx={{
-                    width: '100%',
-                    maxWidth: 400,
-                    height: 'auto',
-                    objectFit: 'cover',
-                    borderRadius: 1,
-                    border: '1px solid #ddd',
-                  }}
-                />
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  {relatorio.img_urls.map((url, index) => (
+                    <Box
+                      key={index}
+                      component="img"
+                      src={url}
+                      alt={`Foto ${index + 1}`}
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        border: '1px solid #ddd',
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
             )}
           </Box>
