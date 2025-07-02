@@ -12,6 +12,7 @@ import {
   Button,
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person, Assignment } from '@mui/icons-material'
+import ImageCarousel from '@/components/ImageCarousel'
 
 interface Relatorio {
   id: number
@@ -65,10 +66,18 @@ export default function HomePage() {
           .order('data_relatorio', { ascending: false })
           .limit(3)
 
-        const parsed = (data || []).map((r) => ({
-          ...r,
-          img_urls: r.img_url ? (JSON.parse(r.img_url) as string[]) : [],
-        }))
+          const parsed = (data || []).map((r) => {
+            let urls: string[] = []
+            if (r.img_url) {
+              try {
+                const val = JSON.parse(r.img_url)
+                urls = Array.isArray(val) ? val : [r.img_url]
+              } catch {
+                urls = [r.img_url]
+              }
+            }
+            return { ...r, img_urls: urls }
+          })
         setRelatorios(parsed)
       }
     }
@@ -185,13 +194,17 @@ export default function HomePage() {
                 <Typography variant='subtitle2' color='text.secondary'>
                   {new Date(rel.data_relatorio).toLocaleDateString('pt-BR')} - {rel.dia_semana}
                 </Typography>
-                {rel.img_urls && rel.img_urls[0] && (
-                  <Box
-                    component='img'
-                    src={rel.img_urls[0]}
-                    alt='Imagem do relatório'
-                    sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
-                  />
+                {rel.img_urls && rel.img_urls.length > 0 ? (
+                  <ImageCarousel urls={rel.img_urls} height={300} />
+                ) : (
+                  rel.img_url && (
+                    <Box
+                      component='img'
+                      src={rel.img_url}
+                      alt='Imagem do relatório'
+                      sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
+                    />
+                  )
                 )}
                 <Typography variant='body1' sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
                   {rel.conteudo}

@@ -84,10 +84,18 @@ export default function RelatoriosAlunoDetalhe() {
 
         if (error) throw error
 
-        const parsed = (data || []).map((r) => ({
-          ...r,
-          img_urls: r.img_url ? (JSON.parse(r.img_url) as string[]) : [],
-        }))
+        const parsed = (data || []).map((r) => {
+          let urls: string[] = []
+          if (r.img_url) {
+            try {
+              const val = JSON.parse(r.img_url)
+              urls = Array.isArray(val) ? val : [r.img_url]
+            } catch {
+              urls = [r.img_url]
+            }
+          }
+          return { ...r, img_urls: urls }
+        })
         setRelatorios(parsed)
       } catch (err) {
         console.error('Erro ao carregar relatórios:', err)
@@ -155,11 +163,21 @@ export default function RelatoriosAlunoDetalhe() {
                 <TableRow
                   key={relatorio.id}
                   hover
-                  sx={{ cursor: relatorio.img_urls && relatorio.img_urls.length > 0 ? 'pointer' : 'default' }}
-                  onClick={() =>
-                    relatorio.img_urls && relatorio.img_urls.length > 0 &&
-                    setImagemSelecionada(relatorio.img_urls[0])
-                  }
+                  sx={{
+                    cursor:
+                      relatorio.img_urls && relatorio.img_urls.length > 0
+                        ? 'pointer'
+                        : relatorio.img_url
+                        ? 'pointer'
+                        : 'default',
+                  }}
+                  onClick={() => {
+                    if (relatorio.img_urls && relatorio.img_urls.length > 0) {
+                      setImagemSelecionada(relatorio.img_urls[0])
+                    } else if (relatorio.img_url) {
+                      setImagemSelecionada(relatorio.img_url)
+                    }
+                  }}
                 >
                   <TableCell>{formatarData(relatorio.data_relatorio)}</TableCell>
                   <TableCell>
@@ -167,13 +185,22 @@ export default function RelatoriosAlunoDetalhe() {
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{relatorio.conteudo}</TableCell>
                   <TableCell>
-                    {relatorio.img_urls && relatorio.img_urls[0] && (
+                    {relatorio.img_urls && relatorio.img_urls.length > 0 ? (
                       <Box
                         component='img'
                         src={relatorio.img_urls[0]}
                         alt='Miniatura do relatório'
                         sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
                       />
+                    ) : (
+                      relatorio.img_url && (
+                        <Box
+                          component='img'
+                          src={relatorio.img_url}
+                          alt='Miniatura do relatório'
+                          sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                        />
+                      )
                     )}
                   </TableCell>
                 </TableRow>

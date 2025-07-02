@@ -88,9 +88,14 @@ export default function RelatorioDiarioPage() {
     try {
       const fotoUrls = await uploadRef.current?.upload();
 
+      const dadosRelatorio = {
+        id_aluno: relatorio.id_aluno,
+        conteudo: relatorio.conteudo,
+        dia_semana: relatorio.dia_semana,
+      }
       const { error } = await supabase.from('relatorios').insert([
         {
-          ...relatorio,
+          ...dadosRelatorio,
           img_url: fotoUrls && fotoUrls.length > 0 ? JSON.stringify(fotoUrls) : null,
           data_relatorio: new Date().toISOString(),
         },
