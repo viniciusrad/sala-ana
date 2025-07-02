@@ -38,6 +38,15 @@ export default function AlunosAdm() {
           </CardContent>
         </Card>
       </Grid>
+      <Grid item xs={12} sm={6}>
+        <Card sx={{ height: '100%' }} onClick={() => router.push('/alunos-adm/cadastro/disp-agenda')}>
+          <CardContent>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Cadastramento de horários
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
     </Grid>
    </Container>
   );
