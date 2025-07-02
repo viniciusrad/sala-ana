@@ -26,12 +26,24 @@ type Agendamento = {
   professor: string;
 };
 
-const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-const horariosDisponiveis = [{ text: "14:00/16:00", value: "14:00" }, { text: "16:00/18:00", value: "16:00" }];
+const diaNome = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
+
+type HorarioDisponivel = {
+  text: string;
+  value: string;
+  maxAlunos: number;
+};
 
 export default function AgendamentoReforco() {
   const router = useRouter();
-  const maxAlunos = 8;
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [agendamentosPessoais, setAgendamentosPessoais] = useState<Agendamento[]>([]);
   const [novosDias, setNovosDias] = useState<string[]>([]);
@@ -51,6 +63,11 @@ export default function AgendamentoReforco() {
       [horario: string]: string;
     };
   }>({});
+  const [horariosPorDia, setHorariosPorDia] = useState<{
+    [dia: string]: HorarioDisponivel[];
+  }>({});
+  const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
+  const [horariosUnicos, setHorariosUnicos] = useState<HorarioDisponivel[]>([]);
   useEffect(() => {
     const carregarUsuario = async () => {
       try {
@@ -86,6 +103,7 @@ export default function AgendamentoReforco() {
 
     carregarUsuario();
     carregarProfessores();
+    carregarDisponibilidade();
   }, [router]);
 
 
@@ -96,6 +114,41 @@ export default function AgendamentoReforco() {
     }
     setProfessores(data || []);
   }
+
+  const carregarDisponibilidade = async () => {
+    const { data, error } = await supabase
+      .from('disp_agenda')
+      .select('dia_semana, horario_inicio, horario_fim, max_alunos, status');
+    if (error) {
+      console.error('Erro ao carregar disponibilidade:', error);
+      return;
+    }
+
+    const ativos = (data || []).filter((d) => d.status === 'ativo');
+    const mapa: { [dia: string]: HorarioDisponivel[] } = {};
+    const unicos: { [value: string]: HorarioDisponivel } = {};
+
+    ativos.forEach((item) => {
+      const dia = diaNome[item.dia_semana as number] || String(item.dia_semana);
+      if (!mapa[dia]) mapa[dia] = [];
+      mapa[dia].push({
+        text: `${item.horario_inicio}/${item.horario_fim}`,
+        value: item.horario_inicio,
+        maxAlunos: item.max_alunos,
+      });
+      if (!unicos[item.horario_inicio]) {
+        unicos[item.horario_inicio] = {
+          text: `${item.horario_inicio}/${item.horario_fim}`,
+          value: item.horario_inicio,
+          maxAlunos: item.max_alunos,
+        };
+      }
+    });
+
+    setHorariosPorDia(mapa);
+    setDiasDisponiveis(Object.keys(mapa));
+    setHorariosUnicos(Object.values(unicos));
+  };
 
 
   const toggleDia = (dia: string) => {
@@ -152,6 +205,18 @@ export default function AgendamentoReforco() {
     }
 
     try {
+      // Verifica capacidade antes de inserir
+      for (const [dia, horarios] of Object.entries(novosHorarios)) {
+        for (const horario of horarios) {
+          const total = calcularTotalAlunosPorHorario(dia, horario);
+          const max = horariosPorDia[dia]?.find(h => h.value === horario)?.maxAlunos || 0;
+          if (max > 0 && total >= max) {
+            alert(`Horário lotado em ${dia} às ${horario}`);
+            return;
+          }
+        }
+      }
+
       // Para cada dia e horário selecionado, criar um registro na tabela
       const registros = Object.entries(novosHorarios).flatMap(([dia, horarios]) =>
         horarios.map((horario) => ({
@@ -334,7 +399,7 @@ export default function AgendamentoReforco() {
             justifyContent="space-between"
           >
             <FormHelperText>
-              Máximo de alunos por horário: {maxAlunos}
+              Capacidade conforme disponibilidade cadastrada
             </FormHelperText>
             <FormHelperText>
               {usuario?.tipo_usuario === 'admin' ? 'Administrador' : 'Aluno'}:{" "}
@@ -355,7 +420,7 @@ export default function AgendamentoReforco() {
               Dias da Semana (selecione até 3)
             </Typography>
             <Box display="flex" gap={1} flexWrap="wrap">
-              {diasSemana.map((dia) => (
+              {diasDisponiveis.map((dia) => (
                 <Button
                   key={dia}
                   variant={novosDias.includes(dia) ? "contained" : "outlined"}
@@ -382,7 +447,7 @@ export default function AgendamentoReforco() {
                 </Typography>
                 <Box display="flex" gap={1} flexWrap="wrap">
                   <div>
-                    {horariosDisponiveis.map((horario) => (
+                    {(horariosPorDia[dia] || []).map((horario) => (
                       <Box key={`${dia}-${horario.value}`} mb={2}>
                         <Button
                           variant={
@@ -473,18 +538,19 @@ export default function AgendamentoReforco() {
               <TableHead>
                 <TableRow>
                   <TableCell>Dia</TableCell>
-                  {horariosDisponiveis.map((horario) => (
+                  {horariosUnicos.map((horario) => (
                     <TableCell key={horario.value} align="center">{horario.text}</TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {diasSemana.map((dia) => (
+                {diasDisponiveis.map((dia) => (
                   <TableRow key={dia}>
                     <TableCell>{dia}</TableCell>
-                    {horariosDisponiveis.map((horario) => {
+                    {horariosUnicos.map((horario) => {
                       const total = calcularTotalAlunosPorHorario(dia, horario.value);
-                      const lotado = total >= maxAlunos;
+                      const max = horariosPorDia[dia]?.find(h => h.value === horario.value)?.maxAlunos || 0;
+                      const lotado = total >= max && max > 0;
                       return (
                         <TableCell
                           key={`${dia}-${horario.value}`}
@@ -495,7 +561,7 @@ export default function AgendamentoReforco() {
                             fontWeight: total > 0 ? 'bold' : 'normal'
                           }}
                         >
-                          {total}/{maxAlunos}
+                          {total}/{max || '-'}
                         </TableCell>
                       );
                     })}
