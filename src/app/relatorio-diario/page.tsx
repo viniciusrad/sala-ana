@@ -27,6 +27,7 @@ interface Relatorio {
   data_relatorio?: string;
   conteudo: string;
   dia_semana: string;
+  img_url?: string | null;
   img_urls?: string[];
 }
 
@@ -42,6 +43,7 @@ export default function RelatorioDiarioPage() {
     id_aluno: '',
     conteudo: '',
     dia_semana: '',
+    img_url: undefined,
     img_urls: [],
   });
 
@@ -101,6 +103,7 @@ export default function RelatorioDiarioPage() {
         ...relatorio,
         conteudo: '',
         dia_semana: '',
+        img_url: undefined,
         img_urls: fotoUrls || [],
       });
     } catch (err) {
