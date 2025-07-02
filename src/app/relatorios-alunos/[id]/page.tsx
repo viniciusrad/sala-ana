@@ -23,6 +23,7 @@ import {
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 import { parseImageUrls } from '@/lib/utils'
+import ImageCarousel from '@/components/ImageCarousel'
 
 interface Relatorio {
   id: number
@@ -42,7 +43,7 @@ export default function RelatoriosAlunoDetalhe() {
   const [error, setError] = useState<string | null>(null)
   const [alunoNome, setAlunoNome] = useState<string>('')
   const [relatorios, setRelatorios] = useState<Relatorio[]>([])
-  const [imagemSelecionada, setImagemSelecionada] = useState<string | null>(null)
+  const [fotosSelecionadas, setFotosSelecionadas] = useState<string[]>([])
 
   useEffect(() => {
     const carregar = async () => {
@@ -169,9 +170,11 @@ export default function RelatoriosAlunoDetalhe() {
                   }}
                   onClick={() => {
                     if (relatorio.img_urls && relatorio.img_urls.length > 0) {
-                      setImagemSelecionada(relatorio.img_urls[0])
+                      setFotosSelecionadas(relatorio.img_urls)
                     } else if (relatorio.img_url) {
-                      setImagemSelecionada(relatorio.img_url)
+                      setFotosSelecionadas([relatorio.img_url])
+                    } else {
+                      setFotosSelecionadas([])
                     }
                   }}
                 >
@@ -181,23 +184,28 @@ export default function RelatoriosAlunoDetalhe() {
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{relatorio.conteudo}</TableCell>
                   <TableCell>
-                    {relatorio.img_urls && relatorio.img_urls.length > 0 ? (
-                      <Box
-                        component='img'
-                        src={relatorio.img_urls[0]}
-                        alt='Miniatura do relatório'
-                        sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
-                      />
-                    ) : (
-                      relatorio.img_url && (
-                        <Box
-                          component='img'
-                          src={relatorio.img_url}
-                          alt='Miniatura do relatório'
-                          sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
-                        />
-                      )
-                    )}
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {relatorio.img_urls && relatorio.img_urls.length > 0 ? (
+                        relatorio.img_urls.map((url, idx) => (
+                          <Box
+                            key={idx}
+                            component='img'
+                            src={url}
+                            alt={`Miniatura ${idx + 1}`}
+                            sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                          />
+                        ))
+                      ) : (
+                        relatorio.img_url && (
+                          <Box
+                            component='img'
+                            src={relatorio.img_url}
+                            alt='Miniatura do relatório'
+                            sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                          />
+                        )
+                      )}
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -206,15 +214,10 @@ export default function RelatoriosAlunoDetalhe() {
         </TableContainer>
       )}
 
-      <Dialog open={Boolean(imagemSelecionada)} onClose={() => setImagemSelecionada(null)} maxWidth='lg'>
+      <Dialog open={fotosSelecionadas.length > 0} onClose={() => setFotosSelecionadas([])} maxWidth='lg'>
         <DialogContent>
-          {imagemSelecionada && (
-            <Box
-              component='img'
-              src={imagemSelecionada}
-              alt='Foto do relatório'
-              sx={{ width: '100%', height: 'auto', maxWidth: 600 }}
-            />
+          {fotosSelecionadas.length > 0 && (
+            <ImageCarousel urls={fotosSelecionadas} height={600} />
           )}
         </DialogContent>
       </Dialog>
