@@ -18,12 +18,15 @@ import {
   Select,
   MenuItem,
   Divider,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
 } from '@mui/material'
 
 interface FormData {
   horario_inicio: string
   horario_fim: string
-  dia_semana: number
+  dias_semana: number[]
   max_alunos: number
   status: 'ativo' | 'inativo'
 }
@@ -39,7 +42,7 @@ export default function CadastroDispAgenda() {
   const [formData, setFormData] = useState<FormData>({
     horario_inicio: '',
     horario_fim: '',
-    dia_semana: 0,
+    dias_semana: [],
     max_alunos: 1,
     status: 'ativo',
   })
@@ -73,9 +76,15 @@ export default function CadastroDispAgenda() {
     setSuccess(null)
 
     try {
+      const { dias_semana, ...baseData } = formData
+      if (dias_semana.length === 0) {
+        throw new Error('Selecione ao menos um dia da semana')
+      }
+      const registros = dias_semana.map((dia) => ({ ...baseData, dia_semana: dia }))
+
       const { error: insertError } = await supabase
         .from('disp_agenda')
-        .insert([formData])
+        .insert(registros)
 
       if (insertError) throw insertError
 
@@ -83,7 +92,7 @@ export default function CadastroDispAgenda() {
       setFormData({
         horario_inicio: '',
         horario_fim: '',
-        dia_semana: 0,
+        dias_semana: [],
         max_alunos: 1,
         status: 'ativo',
       })
@@ -156,21 +165,31 @@ export default function CadastroDispAgenda() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Dia da Semana</InputLabel>
-                  <Select
-                    value={formData.dia_semana}
-                    label="Dia da Semana"
-                    onChange={(e) => setFormData(prev => ({ ...prev, dia_semana: Number(e.target.value) }))}
-                  >
-                    {diasSemana.map((dia, index) => (
-                      <MenuItem key={dia} value={index}>
-                        {dia}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Dias da Semana
+                </Typography>
+                <FormGroup row>
+                  {diasSemana.map((dia, index) => (
+                    <FormControlLabel
+                      key={dia}
+                      control={
+                        <Checkbox
+                          checked={formData.dias_semana.includes(index)}
+                          onChange={() => {
+                            setFormData((prev) => {
+                              const dias = prev.dias_semana.includes(index)
+                                ? prev.dias_semana.filter((d) => d !== index)
+                                : [...prev.dias_semana, index]
+                              return { ...prev, dias_semana: dias }
+                            })
+                          }}
+                        />
+                      }
+                      label={dia}
+                    />
+                  ))}
+                </FormGroup>
               </Grid>
 
               <Grid item xs={12} sm={6}>
