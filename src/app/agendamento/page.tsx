@@ -20,10 +20,14 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
+type HorarioComProfessor = {
+  horario: string;
+  professor: string;
+};
+
 type Agendamento = {
   aluno: string;
-  horarios: { [dia: string]: string[] };
-  professor: string;
+  horarios: { [dia: string]: HorarioComProfessor[] };
 };
 
 const diaNome = [
@@ -247,16 +251,9 @@ export default function AgendamentoReforco() {
       setNovosHorarios({});
       setProfessorAgendadoHorario({});
 
-      // Atualiza a lista de agendamentos
+      // Recarrega os agendamentos para exibir os dados atualizados
       if (data) {
-        setAgendamentos([
-          ...agendamentos,
-          {
-            aluno: usuario.nome_completo || usuario.email || '',
-            horarios: novosHorarios,
-            professor: professores.find(p => p.id === professorAgendadoHorario[Object.keys(novosHorarios)[0]]?.[Object.values(novosHorarios)[0][0]])?.nome || 'Professor não definido'
-          },
-        ]);
+        carregarAgendamentos();
       }
     } catch (err) {
       console.error('Erro ao processar agendamento:', err);
@@ -288,7 +285,7 @@ export default function AgendamentoReforco() {
 
       if (agendamentosData) {
         // Obtemos todos os IDs de professores únicos
-        const professorIds = [...new Set(agendamentosData.map(a => a.professor_id).filter(Boolean))];
+        const professorIds = [...new Set(agendamentosData.map(a => a.professor).filter(Boolean))];
 
         // Carregamos as informações dos professores
         const { data: professoresData, error: professoresError } = await supabase
@@ -310,7 +307,7 @@ export default function AgendamentoReforco() {
         const agendamentosAgrupados = agendamentosData.reduce((acc: Agendamento[], item) => {
           const alunoEmail = item.profiles?.email || '';
           const alunoNome = item.profiles?.nome_completo || alunoEmail;
-          const professorNome = item.professor_id ? professoresMap.get(item.professor_id) || 'Professor não definido' : 'Professor não definido';
+        const professorNome = item.professor ? professoresMap.get(item.professor) || 'Professor não definido' : 'Professor não definido';
 
           const alunoExistente = acc.find(a => a.aluno === alunoNome);
 
@@ -318,19 +315,13 @@ export default function AgendamentoReforco() {
             if (!alunoExistente.horarios[item.dia_semana]) {
               alunoExistente.horarios[item.dia_semana] = [];
             }
-            if (!alunoExistente.horarios[item.dia_semana].includes(item.horario)) {
-              alunoExistente.horarios[item.dia_semana].push(item.horario);
-            }
-            if (!alunoExistente.professor) {
-              alunoExistente.professor = professorNome;
-            }
+            alunoExistente.horarios[item.dia_semana].push({ horario: item.horario, professor: professorNome });
           } else {
             acc.push({
               aluno: alunoNome,
               horarios: {
-                [item.dia_semana]: [item.horario]
-              },
-              professor: professorNome
+                [item.dia_semana]: [{ horario: item.horario, professor: professorNome }]
+              }
             });
           }
 
@@ -365,7 +356,7 @@ export default function AgendamentoReforco() {
       // Se houver horários no dia, verifica se o horário específico está incluído
       if (Array.isArray(horariosNoDia)) {
         // Compara apenas as horas e minutos, ignorando os segundos
-        const horarioExiste = horariosNoDia.some(h => h.startsWith(horario));
+        const horarioExiste = horariosNoDia.some(h => h.horario.startsWith(horario));
         if (horarioExiste) {
           total += 1;
         }
@@ -596,8 +587,8 @@ export default function AgendamentoReforco() {
                         ([dia, horarios]) => (
                           <TableRow key={dia}>
                             <TableCell>{dia}</TableCell>
-                            <TableCell>{horarios.join(", ")}</TableCell>
-                            <TableCell>{agendamento.professor}</TableCell>
+                            <TableCell>{horarios.map(h => h.horario).join(", ")}</TableCell>
+                            <TableCell>{horarios.map(h => h.professor).join(", ")}</TableCell>
                           </TableRow>
                         )
                       )}
