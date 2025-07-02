@@ -12,6 +12,8 @@ import {
   Button,
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person, Assignment } from '@mui/icons-material'
+import ImageCarousel from '@/components/ImageCarousel'
+import { parseImageUrls } from '@/lib/utils'
 
 interface Relatorio {
   id: number
@@ -19,6 +21,7 @@ interface Relatorio {
   conteudo: string
   dia_semana: string
   img_url?: string | null
+  img_urls?: string[]
 }
 
 export default function HomePage() {
@@ -59,12 +62,19 @@ export default function HomePage() {
       if (tipo === 'aluno') {
         const { data } = await supabase
           .from('relatorios')
-          .select('*')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url, img_urls')
           .eq('id_aluno', session.user.id)
           .order('data_relatorio', { ascending: false })
           .limit(3)
 
-        setRelatorios(data || [])
+        const parsed = (data || []).map((r) => {
+          let urls = parseImageUrls(r.img_urls)
+          if (urls.length === 0) {
+            urls = parseImageUrls(r.img_url)
+          }
+          return { ...r, img_urls: urls }
+        })
+        setRelatorios(parsed)
       }
     }
 
@@ -180,13 +190,17 @@ export default function HomePage() {
                 <Typography variant='subtitle2' color='text.secondary'>
                   {new Date(rel.data_relatorio).toLocaleDateString('pt-BR')} - {rel.dia_semana}
                 </Typography>
-                {rel.img_url && (
-                  <Box
-                    component='img'
-                    src={rel.img_url}
-                    alt='Imagem do relatório'
-                    sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
-                  />
+                {rel.img_urls && rel.img_urls.length > 0 ? (
+                  <ImageCarousel urls={rel.img_urls} height={300} />
+                ) : (
+                  rel.img_url && (
+                    <Box
+                      component='img'
+                      src={rel.img_url}
+                      alt='Imagem do relatório'
+                      sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mt: 1 }}
+                    />
+                  )
                 )}
                 <Typography variant='body1' sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
                   {rel.conteudo}

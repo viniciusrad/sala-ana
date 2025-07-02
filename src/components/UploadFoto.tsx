@@ -17,7 +17,7 @@ import { CameraAlt } from '@mui/icons-material'
 import { uploadRelatorioPhoto } from '@/lib/upload'
 
 export type UploadFotoHandle = {
-  upload: () => Promise<string | null>
+  upload: () => Promise<string[]>
 }
 
 interface UploadFotoProps {
@@ -28,17 +28,24 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
   ({ relatorioId }, ref) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [imgFile, setImgFile] = useState<File | null>(null)
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+    const [imgFiles, setImgFiles] = useState<File[]>([])
+    const [previewUrls, setPreviewUrls] = useState<string[]>([])
     const cameraInputRef = useRef<HTMLInputElement>(null)
 
     useImperativeHandle(ref, () => ({
       async upload() {
-        if (!imgFile) {
+        if (imgFiles.length === 0) {
           setError('Nenhuma imagem selecionada')
-          return null
+          return []
         }
-        return await processarArquivo(imgFile)
+        const urls: string[] = []
+        for (const file of imgFiles) {
+          const url = await processarArquivo(file)
+          if (url) urls.push(url)
+        }
+        setImgFiles([])
+        setPreviewUrls([])
+        return urls
       },
     }))
 
@@ -57,7 +64,6 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
         setLoading(true)
         setError(null)
         const { url } = await uploadRelatorioPhoto(file, relatorioId)
-        setPreviewUrl(null)
         return url
       } catch (err) {
         console.error('Erro ao fazer upload:', err)
@@ -69,11 +75,11 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
     }
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (file) {
-        setImgFile(file)
-        const objectUrl = URL.createObjectURL(file)
-        setPreviewUrl(objectUrl)
+      const files = Array.from(event.target.files || [])
+      if (files.length > 0) {
+        setImgFiles(files)
+        const urls = files.map((file) => URL.createObjectURL(file))
+        setPreviewUrls(urls)
       }
     }
 
@@ -85,6 +91,7 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
             style={{ display: 'none' }}
             id="capturar-foto"
             type="file"
+            multiple
             onChange={handleFileChange}
             disabled={loading}
             capture="environment"
@@ -105,24 +112,28 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
 
         {error && <Alert severity="error">{error}</Alert>}
 
-        {previewUrl && (
+        {previewUrls.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Prévia da foto:
+              Prévia das fotos:
             </Typography>
-            <Box
-              component="img"
-              src={previewUrl}
-              alt="Prévia da foto"
-              sx={{
-                width: '100%',
-                maxWidth: 300,
-                height: 'auto',
-                objectFit: 'cover',
-                borderRadius: 1,
-                border: '1px solid #ddd',
-              }}
-            />
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              {previewUrls.map((url, index) => (
+                <Box
+                  key={index}
+                  component="img"
+                  src={url}
+                  alt={`Prévia ${index + 1}`}
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    objectFit: 'cover',
+                    borderRadius: 1,
+                    border: '1px solid #ddd',
+                  }}
+                />
+              ))}
+            </Box>
           </Box>
         )}
       </Box>

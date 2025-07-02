@@ -8,4 +8,33 @@ import { twMerge } from "tailwind-merge"
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-} 
+}
+
+/**
+ * Converte possíveis strings ou arrays vindos do banco
+ * em uma lista de URLs de imagem. Valores inválidos são
+ * ignorados.
+ */
+export function parseImageUrls(value: unknown): string[] {
+  if (!value) return []
+
+  if (Array.isArray(value)) {
+    return value.filter((v) => typeof v === 'string')
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v) => typeof v === 'string')
+      }
+      if (typeof parsed === 'string') {
+        return [parsed]
+      }
+    } catch {
+      // não é JSON, possivelmente uma única URL
+    }
+  }
+
+  return []
+}

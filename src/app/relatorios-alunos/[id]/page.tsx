@@ -22,6 +22,7 @@ import {
   DialogContent
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
+import { parseImageUrls } from '@/lib/utils'
 
 interface Relatorio {
   id: number
@@ -29,6 +30,7 @@ interface Relatorio {
   conteudo: string
   dia_semana: string
   img_url?: string | null
+  img_urls?: string[]
 }
 
 export default function RelatoriosAlunoDetalhe() {
@@ -77,13 +79,20 @@ export default function RelatoriosAlunoDetalhe() {
 
         const { data, error } = await supabase
           .from('relatorios')
-          .select('id, data_relatorio, conteudo, dia_semana, img_url')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url, img_urls')
           .eq('id_aluno', alunoId)
           .order('data_relatorio', { ascending: false })
 
         if (error) throw error
 
-        setRelatorios(data || [])
+        const parsed = (data || []).map((r) => {
+          let urls = parseImageUrls(r.img_urls)
+          if (urls.length === 0) {
+            urls = parseImageUrls(r.img_url)
+          }
+          return { ...r, img_urls: urls }
+        })
+        setRelatorios(parsed)
       } catch (err) {
         console.error('Erro ao carregar relatórios:', err)
         setError('Não foi possível carregar os relatórios')
@@ -150,8 +159,21 @@ export default function RelatoriosAlunoDetalhe() {
                 <TableRow
                   key={relatorio.id}
                   hover
-                  sx={{ cursor: relatorio.img_url ? 'pointer' : 'default' }}
-                  onClick={() => relatorio.img_url && setImagemSelecionada(relatorio.img_url)}
+                  sx={{
+                    cursor:
+                      relatorio.img_urls && relatorio.img_urls.length > 0
+                        ? 'pointer'
+                        : relatorio.img_url
+                        ? 'pointer'
+                        : 'default',
+                  }}
+                  onClick={() => {
+                    if (relatorio.img_urls && relatorio.img_urls.length > 0) {
+                      setImagemSelecionada(relatorio.img_urls[0])
+                    } else if (relatorio.img_url) {
+                      setImagemSelecionada(relatorio.img_url)
+                    }
+                  }}
                 >
                   <TableCell>{formatarData(relatorio.data_relatorio)}</TableCell>
                   <TableCell>
@@ -159,13 +181,22 @@ export default function RelatoriosAlunoDetalhe() {
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>{relatorio.conteudo}</TableCell>
                   <TableCell>
-                    {relatorio.img_url && (
+                    {relatorio.img_urls && relatorio.img_urls.length > 0 ? (
                       <Box
                         component='img'
-                        src={relatorio.img_url}
+                        src={relatorio.img_urls[0]}
                         alt='Miniatura do relatório'
                         sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
                       />
+                    ) : (
+                      relatorio.img_url && (
+                        <Box
+                          component='img'
+                          src={relatorio.img_url}
+                          alt='Miniatura do relatório'
+                          sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                        />
+                      )
                     )}
                   </TableCell>
                 </TableRow>
