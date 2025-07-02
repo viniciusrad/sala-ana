@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { CalendarMonth, Schedule, Person, Assignment } from '@mui/icons-material'
 import ImageCarousel from '@/components/ImageCarousel'
+import { parseImageUrls } from '@/lib/utils'
 
 interface Relatorio {
   id: number
@@ -61,23 +62,18 @@ export default function HomePage() {
       if (tipo === 'aluno') {
         const { data } = await supabase
           .from('relatorios')
-          .select('*')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url, img_urls')
           .eq('id_aluno', session.user.id)
           .order('data_relatorio', { ascending: false })
           .limit(3)
 
-          const parsed = (data || []).map((r) => {
-            let urls: string[] = []
-            if (r.img_url) {
-              try {
-                const val = JSON.parse(r.img_url)
-                urls = Array.isArray(val) ? val : [r.img_url]
-              } catch {
-                urls = [r.img_url]
-              }
-            }
-            return { ...r, img_urls: urls }
-          })
+        const parsed = (data || []).map((r) => {
+          let urls = parseImageUrls(r.img_urls)
+          if (urls.length === 0) {
+            urls = parseImageUrls(r.img_url)
+          }
+          return { ...r, img_urls: urls }
+        })
         setRelatorios(parsed)
       }
     }

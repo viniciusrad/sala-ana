@@ -22,6 +22,7 @@ import {
   DialogContent
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
+import { parseImageUrls } from '@/lib/utils'
 
 interface Relatorio {
   id: number
@@ -78,21 +79,16 @@ export default function RelatoriosAlunoDetalhe() {
 
         const { data, error } = await supabase
           .from('relatorios')
-          .select('id, data_relatorio, conteudo, dia_semana, img_url')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url, img_urls')
           .eq('id_aluno', alunoId)
           .order('data_relatorio', { ascending: false })
 
         if (error) throw error
 
         const parsed = (data || []).map((r) => {
-          let urls: string[] = []
-          if (r.img_url) {
-            try {
-              const val = JSON.parse(r.img_url)
-              urls = Array.isArray(val) ? val : [r.img_url]
-            } catch {
-              urls = [r.img_url]
-            }
+          let urls = parseImageUrls(r.img_urls)
+          if (urls.length === 0) {
+            urls = parseImageUrls(r.img_url)
           }
           return { ...r, img_urls: urls }
         })

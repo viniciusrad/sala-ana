@@ -96,7 +96,8 @@ export default function RelatorioDiarioPage() {
       const { error } = await supabase.from('relatorios').insert([
         {
           ...dadosRelatorio,
-          img_url: fotoUrls && fotoUrls.length > 0 ? JSON.stringify(fotoUrls) : null,
+          img_url: fotoUrls && fotoUrls.length > 0 ? fotoUrls[0] : null,
+          img_urls: fotoUrls && fotoUrls.length > 0 ? JSON.stringify(fotoUrls) : null,
           data_relatorio: new Date().toISOString(),
         },
       ]);
@@ -108,7 +109,7 @@ export default function RelatorioDiarioPage() {
         ...relatorio,
         conteudo: '',
         dia_semana: '',
-        img_url: undefined,
+        img_url: fotoUrls && fotoUrls.length > 0 ? fotoUrls[0] : undefined,
         img_urls: fotoUrls || [],
       });
     } catch (err) {
