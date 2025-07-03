@@ -11,8 +11,14 @@ import {
   Alert,
   Tab,
   Tabs,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import { useRouter } from 'next/navigation'
+
+type TipoUsuario = 'aluno' | 'professor' | 'admin'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -41,6 +47,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>('aluno')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -65,6 +72,7 @@ export default function AuthPage() {
     setEmail('')
     setPassword('')
     setConfirmPassword('')
+    setTipoUsuario('aluno')
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -109,6 +117,9 @@ export default function AuthPage() {
           .upsert({
             id: authData.user.id,
             email: authData.user.email,
+            ...(authData.user.user_metadata?.tipo_usuario && {
+              tipo_usuario: authData.user.user_metadata.tipo_usuario as TipoUsuario,
+            }),
             updated_at: new Date().toISOString(),
           }, {
             onConflict: 'id'
@@ -157,6 +168,7 @@ export default function AuthPage() {
         options: {
           // emailRedirectTo: `${window.location.origin}/auth/callback`,
           emailRedirectTo: `${window.location.origin}/`,
+          data: { tipo_usuario: tipoUsuario },
         },
       })
 
@@ -266,6 +278,19 @@ export default function AuthPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel id="tipo-usuario-label">Tipo de Usuário</InputLabel>
+                <Select
+                  labelId="tipo-usuario-label"
+                  value={tipoUsuario}
+                  label="Tipo de Usuário"
+                  onChange={(e) => setTipoUsuario(e.target.value as TipoUsuario)}
+                >
+                  <MenuItem value="aluno">Aluno</MenuItem>
+                  <MenuItem value="professor">Professor</MenuItem>
+                  <MenuItem value="admin">Administrador</MenuItem>
+                </Select>
+              </FormControl>
               <Button
                 type="submit"
                 fullWidth
