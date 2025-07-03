@@ -21,7 +21,14 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  IconButton,
 } from '@mui/material'
+import { Delete, Save } from '@mui/icons-material'
 
 interface FormData {
   horario_inicio: string
@@ -39,6 +46,8 @@ export default function CadastroDispAgenda() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [horarios, setHorarios] = useState<any[]>([])
+  const [loadingHorarios, setLoadingHorarios] = useState(true)
   const [formData, setFormData] = useState<FormData>({
     horario_inicio: '',
     horario_fim: '',
@@ -46,6 +55,20 @@ export default function CadastroDispAgenda() {
     max_alunos: 1,
     status: 'ativo',
   })
+
+  const carregarHorarios = async () => {
+    setLoadingHorarios(true)
+    const { data, error } = await supabase
+      .from('disp_agenda')
+      .select('id, dia_semana, horario_inicio, horario_fim, max_alunos, status')
+      .order('dia_semana', { ascending: true })
+      .order('horario_inicio', { ascending: true })
+
+    if (!error) {
+      setHorarios(data || [])
+    }
+    setLoadingHorarios(false)
+  }
 
   useEffect(() => {
     const verificarAdmin = async () => {
@@ -64,6 +87,7 @@ export default function CadastroDispAgenda() {
         return
       }
       setLoading(false)
+      carregarHorarios()
     }
 
     verificarAdmin()
@@ -96,6 +120,7 @@ export default function CadastroDispAgenda() {
         max_alunos: 1,
         status: 'ativo',
       })
+      carregarHorarios()
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -104,6 +129,47 @@ export default function CadastroDispAgenda() {
       }
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleChangeHorario = (
+    index: number,
+    field: string,
+    value: string | number,
+  ) => {
+    setHorarios((prev) =>
+      prev.map((h, i) => (i === index ? { ...h, [field]: value } : h)),
+    )
+  }
+
+  const handleUpdateHorario = async (index: number) => {
+    const horario = horarios[index]
+    const { error } = await supabase
+      .from('disp_agenda')
+      .update({
+        dia_semana: horario.dia_semana,
+        horario_inicio: horario.horario_inicio,
+        horario_fim: horario.horario_fim,
+        max_alunos: horario.max_alunos,
+        status: horario.status,
+      })
+      .eq('id', horario.id)
+
+    if (error) {
+      setError('Erro ao atualizar hor\xE1rio')
+    } else {
+      setSuccess('Hor\xE1rio atualizado com sucesso!')
+      carregarHorarios()
+    }
+  }
+
+  const handleDeleteHorario = async (id: number) => {
+    if (!confirm('Deseja excluir este hor\xE1rio?')) return
+    const { error } = await supabase.from('disp_agenda').delete().eq('id', id)
+    if (error) {
+      setError('Erro ao excluir hor\xE1rio')
+    } else {
+      setHorarios((prev) => prev.filter((h) => h.id !== id))
     }
   }
 
@@ -237,6 +303,120 @@ export default function CadastroDispAgenda() {
             </Box>
           </Box>
         </Paper>
+        <Box sx={{ mt: 4 }}>
+          <Paper elevation={3} sx={{ p: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Hor\xE1rios Cadastrados
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            {loadingHorarios ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Dia</TableCell>
+                    <TableCell>In\xEDcio</TableCell>
+                    <TableCell>Fim</TableCell>
+                    <TableCell>M\xE1x. Alunos</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">A\xE7\xF5es</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {horarios.map((h, index) => (
+                    <TableRow key={h.id}>
+                      <TableCell>
+                        <Select
+                          value={h.dia_semana}
+                          size="small"
+                          onChange={(e) =>
+                            handleChangeHorario(index, 'dia_semana', Number(e.target.value))
+                          }
+                        >
+                          {diasSemana.map((dia, i) => (
+                            <MenuItem key={dia} value={i}>
+                              {dia}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="time"
+                          size="small"
+                          value={h.horario_inicio}
+                          onChange={(e) =>
+                            handleChangeHorario(index, 'horario_inicio', e.target.value)
+                          }
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="time"
+                          size="small"
+                          value={h.horario_fim}
+                          onChange={(e) =>
+                            handleChangeHorario(index, 'horario_fim', e.target.value)
+                          }
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          size="small"
+                          value={h.max_alunos}
+                          onChange={(e) =>
+                            handleChangeHorario(index, 'max_alunos', Number(e.target.value))
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={h.status}
+                          size="small"
+                          onChange={(e) =>
+                            handleChangeHorario(index, 'status', e.target.value as string)
+                          }
+                        >
+                          <MenuItem value="ativo">Ativo</MenuItem>
+                          <MenuItem value="inativo">Inativo</MenuItem>
+                        </Select>
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          color="primary"
+                          size="small"
+                          onClick={() => handleUpdateHorario(index)}
+                        >
+                          <Save fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDeleteHorario(h.id)}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {horarios.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        Nenhum hor\xE1rio cadastrado
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
+          </Paper>
+        </Box>
       </Box>
     </Container>
   )
