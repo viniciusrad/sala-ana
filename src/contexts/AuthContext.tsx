@@ -31,20 +31,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const carregarUsuario = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         if (session?.user) {
-          const { data: profile } = await supabase
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, email, tipo_usuario, quantidade_horas')
             .eq('id', session.user.id)
             .single()
+
+          let profile = profileData
+
+          if (profileError && profileError.code !== 'PGRST116') {
+            throw profileError
+          }
+
+          if (!profile) {
+            const { data: newProfile, error: upsertError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: session.user.id,
+                email: session.user.email,
+                tipo_usuario: 'aluno',
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'id' })
+              .select()
+              .single()
+
+            if (upsertError) throw upsertError
+            profile = newProfile
+          }
 
           if (profile) {
             setUser({
               id: session.user.id,
               email: session.user.email!,
               tipo_usuario: profile.tipo_usuario,
-              quantidade_horas: profile.quantidade_horas
+              quantidade_horas: profile.quantidade_horas,
             })
           }
         }
