@@ -18,14 +18,16 @@ import { uploadRelatorioPhoto } from '@/lib/upload'
 
 export type UploadFotoHandle = {
   upload: () => Promise<string[]>
+  getFiles: () => File[]
 }
 
 interface UploadFotoProps {
   relatorioId: number
+  onFilesSelected?: (files: File[]) => void
 }
 
 const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
-  ({ relatorioId }, ref) => {
+  ({ relatorioId, onFilesSelected }, ref) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [imgFiles, setImgFiles] = useState<File[]>([])
@@ -47,6 +49,9 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
         setPreviewUrls([])
         return urls
       },
+      getFiles() {
+        return imgFiles
+      }
     }))
 
     const processarArquivo = async (file: File): Promise<string | null> => {
@@ -80,6 +85,7 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
         setImgFiles(files)
         const urls = files.map((file) => URL.createObjectURL(file))
         setPreviewUrls(urls)
+        onFilesSelected?.(files)
       }
     }
 
@@ -144,3 +150,4 @@ const UploadFoto = forwardRef<UploadFotoHandle, UploadFotoProps>(
 UploadFoto.displayName = 'UploadFoto'
 
 export default UploadFoto
+

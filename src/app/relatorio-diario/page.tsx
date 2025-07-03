@@ -50,6 +50,26 @@ export default function RelatorioDiarioPage() {
 
   const uploadRef = useRef<UploadFotoHandle>(null);
 
+  const processOcr = async (files: File[]) => {
+    if (!files || files.length === 0) {
+      setOcrTexto('');
+      return;
+    }
+    try {
+      const { default: scribe } = await import('scribe.js-ocr');
+      const texto = await scribe.extractText(files);
+      setOcrTexto(
+        typeof texto === 'string'
+          ? texto
+          : Array.isArray(texto)
+            ? texto.join('\n')
+            : ''
+      );
+    } catch (ocrErr) {
+      console.error('Erro ao ler imagens:', ocrErr);
+    }
+  };
+
   useEffect(() => {
     const carregarUsuario = async () => {
       try {
@@ -88,22 +108,6 @@ export default function RelatorioDiarioPage() {
 
     try {
       const fotoUrls = await uploadRef.current?.upload();
-
-      if (fotoUrls && fotoUrls.length > 0) {
-        try {
-          const { default: scribe } = await import('scribe.js-ocr');
-          const texto = await scribe.extractText(fotoUrls);
-          setOcrTexto(
-            typeof texto === 'string'
-              ? texto
-              : Array.isArray(texto)
-                ? texto.join('\n')
-                : ''
-          );
-        } catch (ocrErr) {
-          console.error('Erro ao ler imagens:', ocrErr);
-        }
-      }
 
       const dadosRelatorio = {
         id_aluno: relatorio.id_aluno,
@@ -236,6 +240,7 @@ export default function RelatorioDiarioPage() {
             <UploadFoto
               ref={uploadRef}
               relatorioId={relatorio.id || Date.now()}
+              onFilesSelected={processOcr}
             />
 
             {relatorio.img_urls && relatorio.img_urls.length > 0 && (
@@ -294,3 +299,4 @@ export default function RelatorioDiarioPage() {
     </Container>
   );
 }
+
