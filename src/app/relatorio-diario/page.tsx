@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import scribe from 'scribe.js-ocr/scribe.js';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -92,8 +91,15 @@ export default function RelatorioDiarioPage() {
 
       if (fotoUrls && fotoUrls.length > 0) {
         try {
+          const { default: scribe } = await import('scribe.js-ocr');
           const texto = await scribe.extractText(fotoUrls);
-          setOcrTexto(typeof texto === 'string' ? texto : Array.isArray(texto) ? texto.join('\n') : '');
+          setOcrTexto(
+            typeof texto === 'string'
+              ? texto
+              : Array.isArray(texto)
+                ? texto.join('\n')
+                : ''
+          );
         } catch (ocrErr) {
           console.error('Erro ao ler imagens:', ocrErr);
         }
