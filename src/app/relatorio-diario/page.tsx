@@ -40,6 +40,7 @@ export default function RelatorioDiarioPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [ocrTexto, setOcrTexto] = useState<string>('');
+  const [ocrError, setOcrError] = useState<string | null>(null);
   const [relatorio, setRelatorio] = useState<Relatorio>({
     id_aluno: '',
     conteudo: '',
@@ -53,6 +54,7 @@ export default function RelatorioDiarioPage() {
   const processOcr = async (files: File[]) => {
     if (!files || files.length === 0) {
       setOcrTexto('');
+      setOcrError(null);
       return;
     }
     try {
@@ -65,8 +67,11 @@ export default function RelatorioDiarioPage() {
             ? texto.join('\n')
             : ''
       );
+      setOcrError(null);
     } catch (ocrErr) {
       console.error('Erro ao ler imagens:', ocrErr);
+      setOcrTexto('');
+      setOcrError('Não foi possível ler o texto da imagem.');
     }
   };
 
@@ -118,7 +123,7 @@ export default function RelatorioDiarioPage() {
         {
           ...dadosRelatorio,
           img_url: fotoUrls && fotoUrls.length > 0 ? fotoUrls[0] : null,
-          img_urls: fotoUrls && fotoUrls.length > 0 ? JSON.stringify(fotoUrls) : null,
+          img_urls: fotoUrls && fotoUrls.length > 0 ? fotoUrls : null,
           data_relatorio: new Date().toISOString(),
         },
       ]);
@@ -237,11 +242,32 @@ export default function RelatorioDiarioPage() {
               Foto do Relatório
             </Typography>
 
-            <UploadFoto
-              ref={uploadRef}
-              relatorioId={relatorio.id || Date.now()}
-              onFilesSelected={processOcr}
-            />
+              <UploadFoto
+                ref={uploadRef}
+                relatorioId={relatorio.id || Date.now()}
+                onFilesSelected={processOcr}
+              />
+
+              {ocrError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {ocrError}
+                </Alert>
+              )}
+
+              {ocrTexto && !ocrError && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Conteúdo da Aula
+                  </Typography>
+                  <TextField
+                    multiline
+                    fullWidth
+                    rows={4}
+                    value={ocrTexto}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Box>
+              )}
 
             {relatorio.img_urls && relatorio.img_urls.length > 0 && (
               <Box sx={{ mt: 3 }}>
@@ -265,20 +291,6 @@ export default function RelatorioDiarioPage() {
                     />
                   ))}
                 </Box>
-                {ocrTexto && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Conteúdo da Aula
-                    </Typography>
-                    <TextField
-                      multiline
-                      fullWidth
-                      rows={4}
-                      value={ocrTexto}
-                      InputProps={{ readOnly: true }}
-                    />
-                  </Box>
-                )}
               </Box>
             )}
           </Box>
