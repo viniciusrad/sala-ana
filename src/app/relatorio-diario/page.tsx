@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import scribe from 'scribe.js-ocr/scribe.js';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -39,6 +40,7 @@ export default function RelatorioDiarioPage() {
   const [salvando, setSalvando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [ocrTexto, setOcrTexto] = useState<string>('');
   const [relatorio, setRelatorio] = useState<Relatorio>({
     id_aluno: '',
     conteudo: '',
@@ -87,6 +89,15 @@ export default function RelatorioDiarioPage() {
 
     try {
       const fotoUrls = await uploadRef.current?.upload();
+
+      if (fotoUrls && fotoUrls.length > 0) {
+        try {
+          const texto = await scribe.extractText(fotoUrls);
+          setOcrTexto(typeof texto === 'string' ? texto : Array.isArray(texto) ? texto.join('\n') : '');
+        } catch (ocrErr) {
+          console.error('Erro ao ler imagens:', ocrErr);
+        }
+      }
 
       const dadosRelatorio = {
         id_aluno: relatorio.id_aluno,
@@ -243,6 +254,20 @@ export default function RelatorioDiarioPage() {
                     />
                   ))}
                 </Box>
+                {ocrTexto && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Conteúdo da Aula
+                    </Typography>
+                    <TextField
+                      multiline
+                      fullWidth
+                      rows={4}
+                      value={ocrTexto}
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Box>
+                )}
               </Box>
             )}
           </Box>
