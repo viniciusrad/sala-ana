@@ -30,7 +30,6 @@ interface Relatorio {
   data_relatorio: string
   conteudo: string
   dia_semana: string
-  created_at: string
   img_url?: string | null
   img_urls?: string[]
 }
