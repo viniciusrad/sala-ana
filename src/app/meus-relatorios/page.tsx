@@ -17,16 +17,21 @@ import {
   TableRow,
   Button,
   Alert,
-  Chip
+  Chip,
+  Dialog,
+  DialogContent
 } from '@mui/material'
 import { Assignment, ArrowBack } from '@mui/icons-material'
+import { parseImageUrls } from '@/lib/utils'
+import ImageCarousel from '@/components/ImageCarousel'
 
 interface Relatorio {
   id: number
   data_relatorio: string
   conteudo: string
   dia_semana: string
-  created_at: string
+  img_url?: string | null
+  img_urls?: string[]
 }
 
 export default function MeusRelatoriosPage() {
@@ -34,6 +39,7 @@ export default function MeusRelatoriosPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [relatorios, setRelatorios] = useState<Relatorio[]>([])
+  const [fotosSelecionadas, setFotosSelecionadas] = useState<string[]>([])
 
   useEffect(() => {
     const carregarRelatorios = async () => {
@@ -47,13 +53,21 @@ export default function MeusRelatoriosPage() {
 
         const { data, error } = await supabase
           .from('relatorios')
-          .select('*')
+          .select('id, data_relatorio, conteudo, dia_semana, img_url, img_urls')
           .eq('id_aluno', session.user.id)
           .order('data_relatorio', { ascending: false })
 
         if (error) throw error
 
-        setRelatorios(data || [])
+        const parsed = (data || []).map((r) => {
+          let urls = parseImageUrls(r.img_urls)
+          if (urls.length === 0) {
+            urls = parseImageUrls(r.img_url)
+          }
+          return { ...r, img_urls: urls }
+        })
+
+        setRelatorios(parsed)
       } catch (err) {
         console.error('Erro ao carregar relatórios:', err)
         setError('Não foi possível carregar os relatórios')
@@ -126,24 +140,69 @@ export default function MeusRelatoriosPage() {
                 <TableCell>Data do Relatório</TableCell>
                 <TableCell>Dia da Semana</TableCell>
                 <TableCell>Conteúdo</TableCell>
+                <TableCell>Foto</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {relatorios.map((relatorio) => (
-                <TableRow key={relatorio.id}>
+                <TableRow
+                  key={relatorio.id}
+                  hover
+                  sx={{
+                    cursor:
+                      relatorio.img_urls && relatorio.img_urls.length > 0
+                        ? 'pointer'
+                        : relatorio.img_url
+                        ? 'pointer'
+                        : 'default',
+                  }}
+                  onClick={() => {
+                    if (relatorio.img_urls && relatorio.img_urls.length > 0) {
+                      setFotosSelecionadas(relatorio.img_urls)
+                    } else if (relatorio.img_url) {
+                      setFotosSelecionadas([relatorio.img_url])
+                    } else {
+                      setFotosSelecionadas([])
+                    }
+                  }}
+                >
                   <TableCell>
                     {formatarData(relatorio.data_relatorio)}
                   </TableCell>
                   <TableCell>
-                    <Chip 
-                      label={relatorio.dia_semana} 
-                      color="primary" 
-                      variant="outlined" 
-                      size="small" 
+                    <Chip
+                      label={relatorio.dia_semana}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
                     />
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'pre-wrap' }}>
                     {relatorio.conteudo}
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {relatorio.img_urls && relatorio.img_urls.length > 0 ? (
+                        relatorio.img_urls.map((url, idx) => (
+                          <Box
+                            key={idx}
+                            component='img'
+                            src={url}
+                            alt={`Miniatura ${idx + 1}`}
+                            sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                          />
+                        ))
+                      ) : (
+                        relatorio.img_url && (
+                          <Box
+                            component='img'
+                            src={relatorio.img_url}
+                            alt='Miniatura do relatório'
+                            sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                          />
+                        )
+                      )}
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -151,6 +210,14 @@ export default function MeusRelatoriosPage() {
           </Table>
         </TableContainer>
       )}
+
+      <Dialog open={fotosSelecionadas.length > 0} onClose={() => setFotosSelecionadas([])} maxWidth='lg'>
+        <DialogContent>
+          {fotosSelecionadas.length > 0 && (
+            <ImageCarousel urls={fotosSelecionadas} height={600} />
+          )}
+        </DialogContent>
+      </Dialog>
     </Container>
   )
 }
