@@ -102,6 +102,13 @@ export default function HomePage() {
       path: '/relatorio-diario',
     },
     {
+      title: 'Meus Relatórios',
+      description: 'Visualize todos os relatórios enviados',
+      icon: <Assignment sx={{ fontSize: 40 }} />,
+      path: '/meus-relatorios',
+      aluno: true,
+    },
+    {
       title: 'Relatórios por Aluno',
       description: 'Veja quantos relatórios cada aluno possui',
       icon: <Assignment sx={{ fontSize: 40 }} />,
@@ -143,8 +150,8 @@ export default function HomePage() {
         </Box>
 
         <Grid container spacing={4} marginTop={2}>
-          {menuItems.map((item) => 
-            (!item.admin || isAdmin) && (
+          {menuItems.map((item) =>
+            (!item.admin || isAdmin) && (!item.aluno || tipoUsuario === 'aluno') && (
               <Grid item xs={6} sm={6} key={item.title}>
                 <Paper
                   sx={{
