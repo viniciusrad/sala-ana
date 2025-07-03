@@ -154,6 +154,7 @@ export default function HomePage() {
             (!item.admin || isAdmin) && (!item.aluno || tipoUsuario === 'aluno') && (
               <Grid item xs={6} sm={6} key={item.title}>
                 <Paper
+                  className="comic-card"
                   sx={{
                     p: 3,
                     height: '100%',
@@ -162,11 +163,6 @@ export default function HomePage() {
                     alignItems: 'center',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4,
-                    },
                   }}
                   onClick={() => router.push(item.path)}
                 >
@@ -193,7 +189,7 @@ export default function HomePage() {
               Meus Últimos Relatórios
             </Typography>
             {relatorios.map((rel) => (
-              <Paper key={rel.id} sx={{ p: 2, mb: 2 }}>
+              <Paper key={rel.id} sx={{ p: 2, mb: 2 }} className="comic-card">
                 <Typography variant='subtitle2' color='text.secondary'>
                   {new Date(rel.data_relatorio).toLocaleDateString('pt-BR')} - {rel.dia_semana}
                 </Typography>

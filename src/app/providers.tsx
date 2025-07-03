@@ -9,10 +9,25 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#ff1744',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#2979ff',
+    },
+  },
+  typography: {
+    fontFamily: 'var(--font-inter), sans-serif',
+    h1: {
+      fontFamily: 'var(--font-bangers)',
+      letterSpacing: 1,
+    },
+    h2: {
+      fontFamily: 'var(--font-bangers)',
+      letterSpacing: 1,
+    },
+    h3: {
+      fontFamily: 'var(--font-bangers)',
+      letterSpacing: 1,
     },
   },
 })
