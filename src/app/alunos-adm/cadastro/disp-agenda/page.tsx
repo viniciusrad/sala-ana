@@ -38,6 +38,15 @@ interface FormData {
   status: 'ativo' | 'inativo'
 }
 
+interface Horario {
+  id: number
+  dia_semana: number
+  horario_inicio: string
+  horario_fim: string
+  max_alunos: number
+  status: 'ativo' | 'inativo'
+}
+
 const diasSemana = ['Domingo', 'Segunda', 'Ter\xE7a', 'Quarta', 'Quinta', 'Sexta', 'S\xE1bado']
 
 export default function CadastroDispAgenda() {
@@ -46,7 +55,7 @@ export default function CadastroDispAgenda() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [horarios, setHorarios] = useState<any[]>([])
+  const [horarios, setHorarios] = useState<Horario[]>([])
   const [loadingHorarios, setLoadingHorarios] = useState(true)
   const [formData, setFormData] = useState<FormData>({
     horario_inicio: '',
@@ -134,7 +143,7 @@ export default function CadastroDispAgenda() {
 
   const handleChangeHorario = (
     index: number,
-    field: string,
+    field: keyof Omit<Horario, 'id'>,
     value: string | number,
   ) => {
     setHorarios((prev) =>
