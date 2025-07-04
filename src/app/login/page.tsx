@@ -144,6 +144,7 @@ export default function AuthPage() {
 
         // Redireciona conforme o tipo do usuário
 
+        
         window.location.href = '/'
 
       }
