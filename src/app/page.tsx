@@ -119,14 +119,7 @@ export default function HomePage() {
       title: 'Perfil',
       description: 'Gerencie suas informações',
       icon: <Person sx={{ fontSize: 40 }} />,
-      path: '/perfil',
-    },
-    {
-      title: 'Perfil Aluno',
-      description: 'Complete seus dados de aluno',
-      icon: <Person sx={{ fontSize: 40 }} />,
-      path: '/perfil-aluno',
-      aluno: true,
+      path: tipoUsuario === 'aluno' ? '/perfil-aluno' : '/perfil',
     },
   ]
 
