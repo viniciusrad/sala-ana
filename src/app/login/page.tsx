@@ -132,8 +132,8 @@ export default function AuthPage() {
         // Força uma atualização do estado da sessão
         await supabase.auth.refreshSession()
 
-        // Obtém o tipo de usuário para definir o redirecionamento
-        const { data: perfil } = await supabase
+        // Garante que o perfil esteja atualizado antes do redirecionamento
+        await supabase
           .from('profiles')
           .select('tipo_usuario')
           .eq('id', authData.user.id)
