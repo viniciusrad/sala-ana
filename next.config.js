@@ -19,6 +19,16 @@ const nextConfig = {
       },
     ]
   },
+  webpack: (config, { webpack, isServer }) => {
+    if (!isServer) {
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          process: 'undefined',
+        })
+      )
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig 
