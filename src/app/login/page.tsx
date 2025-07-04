@@ -58,7 +58,7 @@ export default function AuthPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       console.log("🔑 Verificando sessão:", session)
-      
+
       if (session?.user) {
         router.push('/')
       }
@@ -143,11 +143,9 @@ export default function AuthPage() {
         console.log('Cookies após login:', document.cookie)
 
         // Redireciona conforme o tipo do usuário
-        if (perfil?.tipo_usuario === 'aluno') {
-          window.location.href = '/perfil-aluno'
-        } else {
-          window.location.href = '/'
-        }
+
+        window.location.href = '/'
+
       }
     } catch (error) {
       console.error('Erro completo:', error)
