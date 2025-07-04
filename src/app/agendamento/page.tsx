@@ -40,6 +40,16 @@ const diaNome = [
   "Sábado",
 ];
 
+const diaAbreviado: Record<string, string> = {
+  Segunda: "Seg",
+  Terça: "Ter",
+  Quarta: "Qua",
+  Quinta: "Qui",
+  Sexta: "Sex",
+  Sábado: "Sáb",
+  Domingo: "Dom",
+};
+
 type HorarioDisponivel = {
   text: string;
   value: string;
@@ -71,6 +81,15 @@ export default function AgendamentoReforco() {
     [dia: string]: HorarioDisponivel[];
   }>({});
   const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
+  const diasSemanaOrdenados = [
+    "Segunda",
+    "Terça",
+    "Quarta",
+    "Quinta",
+    "Sexta",
+    "Sábado",
+    "Domingo",
+  ];
   const [horariosUnicos, setHorariosUnicos] = useState<HorarioDisponivel[]>([]);
   useEffect(() => {
     const carregarUsuario = async () => {
@@ -150,7 +169,8 @@ export default function AgendamentoReforco() {
     });
 
     setHorariosPorDia(mapa);
-    setDiasDisponiveis(Object.keys(mapa));
+    const ordenados = diasSemanaOrdenados.filter((dia) => mapa[dia]);
+    setDiasDisponiveis(ordenados);
     setHorariosUnicos(Object.values(unicos));
   };
 
@@ -410,7 +430,12 @@ export default function AgendamentoReforco() {
             <Typography variant="subtitle1" gutterBottom>
               Dias da Semana (selecione até 3)
             </Typography>
-            <Box display="flex" gap={1} flexWrap="wrap">
+            <Box
+              display="flex"
+              gap={1}
+              flexWrap="wrap"
+              sx={{ justifyContent: { xs: "center", md: "flex-start" } }}
+            >
               {diasDisponiveis.map((dia) => (
                 <Button
                   key={dia}
@@ -418,7 +443,7 @@ export default function AgendamentoReforco() {
                   onClick={() => toggleDia(dia)}
                   sx={{ flex: 1 }}
                 >
-                  {dia}
+                  {diaAbreviado[dia] || dia}
                 </Button>
               ))}
             </Box>
