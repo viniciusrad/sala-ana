@@ -40,6 +40,16 @@ const diaNome = [
   "Sábado",
 ];
 
+const diaAbreviado: Record<string, string> = {
+  Segunda: "Seg",
+  Terça: "Ter",
+  Quarta: "Qua",
+  Quinta: "Qui",
+  Sexta: "Sex",
+  Sábado: "Sáb",
+  Domingo: "Dom",
+};
+
 type HorarioDisponivel = {
   text: string;
   value: string;
@@ -433,7 +443,7 @@ export default function AgendamentoReforco() {
                   onClick={() => toggleDia(dia)}
                   sx={{ flex: 1 }}
                 >
-                  {dia}
+                  {diaAbreviado[dia] || dia}
                 </Button>
               ))}
             </Box>
