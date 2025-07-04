@@ -87,6 +87,17 @@ export default function RelatorioDiarioPage() {
           return;
         }
 
+        const { data: aluno, error: alunoError } = await supabase
+          .from('aluno')
+          .select('nome, data_nascimento')
+          .eq('id', session.user.id)
+          .single();
+
+        if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
+          router.push('/perfil-aluno');
+          return;
+        }
+
         setRelatorio((prev) => ({
           ...prev,
           id_aluno: session.user.id,

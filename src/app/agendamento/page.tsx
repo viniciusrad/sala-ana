@@ -103,6 +103,17 @@ export default function AgendamentoReforco() {
           return;
         }
 
+        const { data: aluno, error: alunoError } = await supabase
+          .from('aluno')
+          .select('nome, data_nascimento')
+          .eq('id', session.user.id)
+          .single();
+
+        if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
+          router.push('/perfil-aluno');
+          return;
+        }
+
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("nome_completo, tipo_usuario, email")
