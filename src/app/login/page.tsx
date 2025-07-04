@@ -121,11 +121,22 @@ export default function AuthPage() {
         // Força uma atualização do estado da sessão
         await supabase.auth.refreshSession()
 
+        // Obtém o tipo de usuário para definir o redirecionamento
+        const { data: perfil } = await supabase
+          .from('profiles')
+          .select('tipo_usuario')
+          .eq('id', authData.user.id)
+          .single()
+
         // Log dos cookies disponíveis
         console.log('Cookies após login:', document.cookie)
 
-        // Redireciona para a página inicial
-        window.location.href = '/'
+        // Redireciona conforme o tipo do usuário
+        if (perfil?.tipo_usuario === 'aluno') {
+          window.location.href = '/perfil-aluno'
+        } else {
+          window.location.href = '/'
+        }
       }
     } catch (error) {
       console.error('Erro completo:', error)
