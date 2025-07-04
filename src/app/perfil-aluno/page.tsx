@@ -49,6 +49,7 @@ export default function PerfilAluno() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [responsaveis, setResponsaveis] = useState<Array<{ id: string; nome: string }>>([])
+  const [userId, setUserId] = useState<string | null>(null)
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     data_nascimento: '',
@@ -80,6 +81,44 @@ export default function PerfilAluno() {
         if (error) throw error
 
         setResponsaveis(data || [])
+
+        setUserId(session.user.id)
+
+        const { data: alunoData, error: alunoError } = await supabase
+          .from('aluno')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        if (alunoError && alunoError.code !== 'PGRST116') {
+          throw alunoError
+        }
+
+        if (alunoData) {
+          setFormData({
+            nome: alunoData.nome || '',
+            data_nascimento: alunoData.data_nascimento
+              ? new Date(alunoData.data_nascimento).toISOString().split('T')[0]
+              : '',
+            genero: alunoData.genero || '',
+            telefone: alunoData.telefone || '',
+            responsavel_id: alunoData.responsavel_id || '',
+            endereco: alunoData.endereco || '',
+            escola: alunoData.escola || '',
+            serie: alunoData.serie || '',
+            materia_preferencial: alunoData.materia_preferencial || '',
+            data_cadastro: alunoData.data_cadastro
+              ? new Date(alunoData.data_cadastro).toISOString().split('T')[0]
+              : new Date().toISOString().split('T')[0],
+            dias_preferenciais: alunoData.dias_preferenciais
+              ? Array.isArray(alunoData.dias_preferenciais)
+                ? alunoData.dias_preferenciais
+                : String(alunoData.dias_preferenciais)
+                    .split(',')
+                    .map((d: string) => d.trim())
+              : [],
+          })
+        }
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message)
@@ -101,16 +140,24 @@ export default function PerfilAluno() {
     setSuccess(null)
 
     try {
-      const dataToInsert = {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user && !userId) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const id = userId || session!.user.id
+
+      const dataToUpsert = {
+        id,
         ...formData,
         responsavel_id: formData.responsavel_id || null,
       }
 
-      const { error: insertError } = await supabase
+      const { error: upsertError } = await supabase
         .from('aluno')
-        .insert([dataToInsert])
+        .upsert(dataToUpsert, { onConflict: 'id' })
 
-      if (insertError) throw insertError
+      if (upsertError) throw upsertError
 
       setSuccess('Dados salvos com sucesso!')
       router.push('/')
