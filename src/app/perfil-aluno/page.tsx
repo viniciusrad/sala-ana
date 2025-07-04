@@ -29,7 +29,7 @@ interface FormData {
   data_nascimento: string
   genero: string
   telefone: string
-  responsavel_id: string
+  responsavel_id: string | null
   endereco: string
   escola: string
   serie: string
@@ -101,9 +101,14 @@ export default function PerfilAluno() {
     setSuccess(null)
 
     try {
+      const dataToInsert = {
+        ...formData,
+        responsavel_id: formData.responsavel_id || null,
+      }
+
       const { error: insertError } = await supabase
         .from('aluno')
-        .insert([formData])
+        .insert([dataToInsert])
 
       if (insertError) throw insertError
 
@@ -212,13 +217,18 @@ export default function PerfilAluno() {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth>
                   <InputLabel>Responsável</InputLabel>
                   <Select
-                    value={formData.responsavel_id}
+                    value={formData.responsavel_id ?? ''}
                     label="Responsável"
-                    onChange={(e) => setFormData(prev => ({ ...prev, responsavel_id: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData(prev => ({ ...prev, responsavel_id: e.target.value as string }))
+                    }
                   >
+                    <MenuItem value="">
+                      <em>Nenhum</em>
+                    </MenuItem>
                     {responsaveis.map((responsavel) => (
                       <MenuItem key={responsavel.id} value={responsavel.id}>
                         {responsavel.nome}
