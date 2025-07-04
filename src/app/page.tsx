@@ -121,6 +121,13 @@ export default function HomePage() {
       icon: <Person sx={{ fontSize: 40 }} />,
       path: '/perfil',
     },
+    {
+      title: 'Perfil Aluno',
+      description: 'Complete seus dados de aluno',
+      icon: <Person sx={{ fontSize: 40 }} />,
+      path: '/perfil-aluno',
+      aluno: true,
+    },
   ]
 
   return (
