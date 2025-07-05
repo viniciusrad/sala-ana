@@ -4,6 +4,9 @@ import "./globals.css";
 import { Providers } from './providers'
 import Header from "./components/Header";
 import { usePathname } from "next/navigation";
+import dynamic from 'next/dynamic'
+
+const AddToHomeScreen = dynamic(() => import('./components/AddToHomeScreen'), { ssr: false })
 
 export default function RootLayout({
   children,
@@ -18,6 +21,7 @@ export default function RootLayout({
         <Providers>
           {pathname !== '/login' && <Header />}
           {children}
+          <AddToHomeScreen />
         </Providers>
       </body>
     </html>
