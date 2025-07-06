@@ -6,7 +6,6 @@ import Header from "./components/Header";
 import PWAInstaller from "../components/PWAInstaller";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import { usePathname } from "next/navigation";
-import Head from 'next/head';
 
 export default function RootLayout({
   children,
@@ -17,7 +16,7 @@ export default function RootLayout({
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <Head>
+      <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#1976d2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -26,10 +25,10 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/logo-app.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/logo-app.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/logo-app.png" />
-      </Head>
+        <link rel="apple-touch-icon" href="/sala-da-ana-192.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/sala-da-ana-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/sala-da-ana-512.png" />
+      </head>
       <body>
         <Providers>
           <PWAInstaller />
