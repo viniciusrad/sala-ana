@@ -116,6 +116,9 @@ export default function AgendamentoReforco() {
         }
 
 
+
+        console.log("profileData", profileData);
+
         if (profileData?.tipo_usuario === "aluno") {
           const { data: aluno, error: alunoError } = await supabase
             .from('aluno')
