@@ -87,15 +87,24 @@ export default function RelatorioDiarioPage() {
           return;
         }
 
-        const { data: aluno, error: alunoError } = await supabase
-          .from('aluno')
-          .select('nome, data_nascimento')
-          .eq('id', session.user.id)
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("nome_completo, tipo_usuario, email")
+          .eq("id", session.user.id)
           .single();
 
-        if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
-          router.push('/perfil-aluno');
-          return;
+        if (profileData?.tipo_usuario === "aluno") {
+
+          const { data: aluno, error: alunoError } = await supabase
+            .from('aluno')
+            .select('nome, data_nascimento')
+            .eq('id', session.user.id)
+            .single();
+
+          if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
+            router.push('/perfil-aluno');
+            return;
+          }
         }
 
         setRelatorio((prev) => ({
@@ -253,32 +262,32 @@ export default function RelatorioDiarioPage() {
               Foto do Relatório
             </Typography>
 
-              <UploadFoto
-                ref={uploadRef}
-                relatorioId={relatorio.id || Date.now()}
-                onFilesSelected={processOcr}
-              />
+            <UploadFoto
+              ref={uploadRef}
+              relatorioId={relatorio.id || Date.now()}
+              onFilesSelected={processOcr}
+            />
 
-              {ocrError && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {ocrError}
-                </Alert>
-              )}
+            {ocrError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {ocrError}
+              </Alert>
+            )}
 
-              {ocrTexto && !ocrError && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Conteúdo da Aula
-                  </Typography>
-                  <TextField
-                    multiline
-                    fullWidth
-                    rows={4}
-                    value={ocrTexto}
-                    InputProps={{ readOnly: true }}
-                  />
-                </Box>
-              )}
+            {ocrTexto && !ocrError && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Conteúdo da Aula
+                </Typography>
+                <TextField
+                  multiline
+                  fullWidth
+                  rows={4}
+                  value={ocrTexto}
+                  InputProps={{ readOnly: true }}
+                />
+              </Box>
+            )}
 
             {relatorio.img_urls && relatorio.img_urls.length > 0 && (
               <Box sx={{ mt: 3 }}>

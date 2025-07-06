@@ -103,16 +103,6 @@ export default function AgendamentoReforco() {
           return;
         }
 
-        const { data: aluno, error: alunoError } = await supabase
-          .from('aluno')
-          .select('nome, data_nascimento')
-          .eq('id', session.user.id)
-          .single();
-
-        if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
-          router.push('/perfil-aluno');
-          return;
-        }
 
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
@@ -123,6 +113,20 @@ export default function AgendamentoReforco() {
         if (profileError && profileError.code !== "PGRST116") {
           console.error("Erro ao carregar perfil:", profileError);
           return;
+        }
+
+
+        if (profileData?.tipo_usuario === "aluno") {
+          const { data: aluno, error: alunoError } = await supabase
+            .from('aluno')
+            .select('nome, data_nascimento')
+            .eq('id', session.user.id)
+            .single();
+
+          if (alunoError || !aluno?.nome || !aluno?.data_nascimento) {
+            router.push('/perfil-aluno');
+            return;
+          }
         }
 
         setUsuario({
@@ -338,7 +342,7 @@ export default function AgendamentoReforco() {
         const agendamentosAgrupados = agendamentosData.reduce((acc: Agendamento[], item) => {
           const alunoEmail = item.profiles?.email || '';
           const alunoNome = item.profiles?.nome_completo || alunoEmail;
-        const professorNome = item.professor ? professoresMap.get(item.professor) || 'Professor não definido' : 'Professor não definido';
+          const professorNome = item.professor ? professoresMap.get(item.professor) || 'Professor não definido' : 'Professor não definido';
 
           const alunoExistente = acc.find(a => a.aluno === alunoNome);
 
