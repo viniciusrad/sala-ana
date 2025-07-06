@@ -5,7 +5,7 @@ const nextConfig = {
       enabled: true
     }
   },
-  // Adicione isso se estiver tendo problemas com CORS
+  // Configurações para PWA
   async headers() {
     return [
       {
@@ -15,6 +15,12 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: process.env.NEXT_PUBLIC_SITE_URL || '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          { key: 'Content-Type', value: 'application/manifest+json' },
         ],
       },
     ]
