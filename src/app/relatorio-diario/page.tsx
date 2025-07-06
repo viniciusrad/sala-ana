@@ -87,7 +87,7 @@ export default function RelatorioDiarioPage() {
           return;
         }
 
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("nome_completo, tipo_usuario, email")
           .eq("id", session.user.id)
