@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button, Snackbar, Alert, Box, Typography } from '@mui/material'
-import { Share, AddToHomeScreen } from '@mui/icons-material'
+import { Snackbar, Alert, Box, Typography } from '@mui/material'
+import { AddToHomeScreen } from '@mui/icons-material'
 
 export default function IOSInstallPrompt() {
   const [showIOSPrompt, setShowIOSPrompt] = useState(false)
@@ -41,10 +41,10 @@ export default function IOSInstallPrompt() {
             Para instalar o app no iPhone:
           </Typography>
           <Typography variant="caption" display="block">
-            1. Toque no botão <Share /> (compartilhar)
+            1. Toque no botão compartilhar
           </Typography>
           <Typography variant="caption" display="block">
-            2. Selecione "Adicionar à Tela Inicial"
+            2. Selecione &quot;Adicionar à Tela Inicial&quot;
           </Typography>
         </Box>
       </Alert>

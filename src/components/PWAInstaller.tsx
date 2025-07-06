@@ -5,9 +5,6 @@ import { useEffect } from 'react'
 export default function PWAInstaller() {
     useEffect(() => {
         const checkPWARequirements = async () => {
-            // 1. Verificar se está em HTTPS
-            const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
-            
             // 2. Verificar se Service Worker é suportado
             const hasServiceWorker = 'serviceWorker' in navigator;
             
@@ -23,7 +20,7 @@ export default function PWAInstaller() {
                 // Verificar se os ícones existem
                 for (const icon of manifest.icons) {
                     try {
-                        const iconResponse = await fetch(icon.src);
+                        await fetch(icon.src);
                     } catch (error) {
                         console.error(`Ícone ${icon.src} não encontrado:`, error);
                     }
