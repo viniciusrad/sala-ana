@@ -8,6 +8,7 @@
   "theme_color": "#1976d2",
   "orientation": "portrait-primary",
   "scope": "/",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/sala-da-ana-192.png",
@@ -21,5 +22,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "pt-BR"
 } 
