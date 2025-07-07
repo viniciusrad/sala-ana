@@ -446,7 +446,7 @@ export default function AgendamentoReforco() {
 
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle1" gutterBottom>
-              Dias da Semana (selecione até 3)
+              Dias da Semana (selecione até 4)
             </Typography>
             <Box
               display="flex"
