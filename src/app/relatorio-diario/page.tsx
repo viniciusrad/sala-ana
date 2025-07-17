@@ -118,7 +118,12 @@ export default function RelatorioDiarioPage() {
             .select('id, nome_completo')
             .eq('tipo_usuario', 'aluno')
             .order('nome_completo');
-          setAlunos(alunosData || []);
+          setAlunos(
+            alunosData?.map(({ id, nome_completo }) => ({
+              id,
+              nome: nome_completo,
+            })) || []
+          );
         } else {
           setRelatorio((prev) => ({
             ...prev,
