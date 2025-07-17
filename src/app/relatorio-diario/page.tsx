@@ -48,6 +48,8 @@ export default function RelatorioDiarioPage() {
     img_url: undefined,
     img_urls: [],
   });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [alunos, setAlunos] = useState<Array<{ id: string; nome: string }>>([]);
 
   const uploadRef = useRef<UploadFotoHandle>(null);
 
@@ -88,13 +90,12 @@ export default function RelatorioDiarioPage() {
         }
 
         const { data: profileData } = await supabase
-          .from("profiles")
-          .select("nome_completo, tipo_usuario, email")
-          .eq("id", session.user.id)
+          .from('profiles')
+          .select('nome_completo, tipo_usuario, email')
+          .eq('id', session.user.id)
           .single();
 
-        if (profileData?.tipo_usuario === "aluno") {
-
+        if (profileData?.tipo_usuario === 'aluno') {
           const { data: aluno, error: alunoError } = await supabase
             .from('aluno')
             .select('nome, data_nascimento')
@@ -105,12 +106,25 @@ export default function RelatorioDiarioPage() {
             router.push('/perfil-aluno');
             return;
           }
-        }
 
-        setRelatorio((prev) => ({
-          ...prev,
-          id_aluno: session.user.id,
-        }));
+          setRelatorio((prev) => ({
+            ...prev,
+            id_aluno: session.user.id,
+          }));
+        } else if (profileData?.tipo_usuario === 'admin') {
+          setIsAdmin(true);
+          const { data: alunosData } = await supabase
+            .from('profiles')
+            .select('id, nome_completo')
+            .eq('tipo_usuario', 'aluno')
+            .order('nome_completo');
+          setAlunos(alunosData || []);
+        } else {
+          setRelatorio((prev) => ({
+            ...prev,
+            id_aluno: session.user.id,
+          }));
+        }
       } catch (err) {
         console.error('Erro ao carregar usuário:', err);
       } finally {
@@ -122,7 +136,7 @@ export default function RelatorioDiarioPage() {
   }, [router]);
 
   const handleSalvar = async () => {
-    if (!relatorio.conteudo || !relatorio.dia_semana) {
+    if (!relatorio.conteudo || !relatorio.dia_semana || !relatorio.id_aluno) {
       setError('Por favor, preencha todos os campos');
       return;
     }
@@ -219,6 +233,28 @@ export default function RelatorioDiarioPage() {
           </Typography>
 
           <Divider sx={{ my: 1 }} />
+
+          {isAdmin && (
+            <FormControl fullWidth required>
+              <InputLabel>Aluno</InputLabel>
+              <Select
+                value={relatorio.id_aluno}
+                label="Aluno"
+                onChange={(e) =>
+                  setRelatorio((prev) => ({
+                    ...prev,
+                    id_aluno: e.target.value,
+                  }))
+                }
+              >
+                {alunos.map((aluno) => (
+                  <MenuItem key={aluno.id} value={aluno.id}>
+                    {aluno.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
           <FormControl fullWidth>
             <InputLabel>Dia da Semana</InputLabel>
